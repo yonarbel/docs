@@ -38,7 +38,7 @@ The Fly Desktop App is your local agent that:
     
     ### Direct Download
     
-    1. Download the latest `.dmg` from [fly.jfrog.io/download](https://fly.jfrog.io/download)
+    1. Download the latest `.dmg` from [fly.jfrog.ai/download](https://fly.jfrog.ai/download)
     2. Open the downloaded file
     3. Drag **Fly** to your Applications folder
     4. Launch Fly from Applications
@@ -63,7 +63,7 @@ The Fly Desktop App is your local agent that:
     
     ### Direct Download
     
-    1. Download the latest `.exe` from [fly.jfrog.io/download](https://fly.jfrog.io/download)
+    1. Download the latest `.exe` from [fly.jfrog.ai/download](https://fly.jfrog.ai/download)
     2. Run the installer
     3. Follow the installation wizard
     4. Launch Fly from the Start Menu
@@ -73,8 +73,8 @@ The Fly Desktop App is your local agent that:
     ### APT (Debian/Ubuntu)
     
     ```bash
-    curl -fsSL https://fly.jfrog.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/jfrog-fly.gpg
-    echo "deb [signed-by=/usr/share/keyrings/jfrog-fly.gpg] https://fly.jfrog.io/apt stable main" | sudo tee /etc/apt/sources.list.d/jfrog-fly.list
+    curl -fsSL https://fly.jfrog.ai/gpg | sudo gpg --dearmor -o /usr/share/keyrings/jfrog-fly.gpg
+    echo "deb [signed-by=/usr/share/keyrings/jfrog-fly.gpg] https://fly.jfrog.ai/apt stable main" | sudo tee /etc/apt/sources.list.d/jfrog-fly.list
     sudo apt update
     sudo apt install jfrog-fly
     ```
@@ -82,14 +82,14 @@ The Fly Desktop App is your local agent that:
     ### YUM/DNF (RHEL/Fedora)
     
     ```bash
-    sudo dnf config-manager --add-repo https://fly.jfrog.io/rpm/jfrog-fly.repo
+    sudo dnf config-manager --add-repo https://fly.jfrog.ai/rpm/jfrog-fly.repo
     sudo dnf install jfrog-fly
     ```
     
     ### Direct Download
     
     ```bash
-    curl -fsSL https://fly.jfrog.io/download/linux/latest | sudo tar -xz -C /usr/local/bin
+    curl -fsSL https://fly.jfrog.ai/download/linux/latest | sudo tar -xz -C /usr/local/bin
     ```
   </Tab>
 </Tabs>

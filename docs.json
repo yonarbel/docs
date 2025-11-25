@@ -153,7 +153,7 @@
       "anchors": [
         {
           "anchor": "Fly Web",
-          "href": "https://fly.jfrog.io",
+          "href": "https://fly.jfrog.ai",
           "icon": "rocket"
         },
         {
@@ -183,7 +183,7 @@
     "primary": {
       "type": "button",
       "label": "Get Started",
-      "href": "https://fly.jfrog.io"
+      "href": "https://fly.jfrog.ai"
     }
   },
   "footer": {

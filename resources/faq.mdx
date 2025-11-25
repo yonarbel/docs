@@ -34,7 +34,7 @@ icon: "circle-question"
   </Accordion>
   
   <Accordion title="Is Fly free to use?">
-    Fly offers a free tier for individual developers and small teams. For larger teams and enterprise features, please visit [fly.jfrog.io](https://fly.jfrog.io) for pricing information.
+    Fly offers a free tier for individual developers and small teams. For larger teams and enterprise features, please visit [fly.jfrog.ai](https://fly.jfrog.ai) for pricing information.
   </Accordion>
 </AccordionGroup>
 
@@ -44,7 +44,7 @@ icon: "circle-question"
 
 <AccordionGroup>
   <Accordion title="How do I sign up for Fly?">
-    1. Visit [fly.jfrog.io](https://fly.jfrog.io)
+    1. Visit [fly.jfrog.ai](https://fly.jfrog.ai)
     2. Click **Get Started**
     3. Sign up with GitHub, GitLab, or email
     4. Choose your team subdomain
@@ -66,8 +66,8 @@ icon: "circle-question"
     
     **Linux (APT)**:
     ```bash
-    curl -fsSL https://fly.jfrog.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/jfrog-fly.gpg
-    echo "deb [signed-by=/usr/share/keyrings/jfrog-fly.gpg] https://fly.jfrog.io/apt stable main" | sudo tee /etc/apt/sources.list.d/jfrog-fly.list
+    curl -fsSL https://fly.jfrog.ai/gpg | sudo gpg --dearmor -o /usr/share/keyrings/jfrog-fly.gpg
+    echo "deb [signed-by=/usr/share/keyrings/jfrog-fly.gpg] https://fly.jfrog.ai/apt stable main" | sudo tee /etc/apt/sources.list.d/jfrog-fly.list
     sudo apt update && sudo apt install jfrog-fly
     ```
     
@@ -230,7 +230,7 @@ icon: "circle-question"
   <Accordion title="How do I set up GitLab CI with Fly?">
     ```yaml
     before_script:
-      - curl -fsSL https://fly.jfrog.io/install.sh | bash
+      - curl -fsSL https://fly.jfrog.ai/install.sh | bash
       - fly auth login --token $FLY_TOKEN
       - fly config auto
     

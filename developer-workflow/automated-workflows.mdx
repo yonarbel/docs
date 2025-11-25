@@ -178,7 +178,7 @@ variables:
 
 .fly-setup: &fly-setup
   before_script:
-    - curl -fsSL https://fly.jfrog.io/install.sh | bash
+    - curl -fsSL https://fly.jfrog.ai/install.sh | bash
     - fly auth login --token ${FLY_TOKEN}
     - fly config auto
 
@@ -218,7 +218,7 @@ docker-build:
     - docker:dind
   before_script:
     - apk add --no-cache curl bash
-    - curl -fsSL https://fly.jfrog.io/install.sh | bash
+    - curl -fsSL https://fly.jfrog.ai/install.sh | bash
     - fly auth login --token ${FLY_TOKEN}
     - fly config docker
   script:
