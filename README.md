@@ -82,7 +82,7 @@ docs/
 ├── logo/                         # Logo assets
 │   ├── light.svg
 │   └── dark.svg
-└── favicon.svg                   # Favicon
+└── favicon.ico                   # Favicon
 ```
 
 ## ✏️ Contributing
