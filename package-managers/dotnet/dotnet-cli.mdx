@@ -1,0 +1,115 @@
+---
+title: "dotnet CLI"
+sidebarTitle: "dotnet CLI"
+description: "Configure the .NET CLI to use your Fly Registry"
+icon: "terminal"
+---
+
+## Overview
+
+The .NET CLI (`dotnet`) can be configured to use your JFrog Fly Registry for package management.
+
+---
+
+## Configuration
+
+### Add Package Source
+
+```bash
+dotnet nuget add source \
+    "https://your-team.jfrog.io/artifactory/api/nuget/nuget/v3/index.json" \
+    --name Fly \
+    --username your-email@example.com \
+    --password fly_abc123... \
+    --store-password-in-clear-text
+```
+
+### List Sources
+
+```bash
+dotnet nuget list source
+```
+
+### Remove Source
+
+```bash
+dotnet nuget remove source Fly
+```
+
+---
+
+## Package Operations
+
+### Install Package
+
+```bash
+dotnet add package MyPackage --source Fly
+```
+
+### Restore Packages
+
+```bash
+dotnet restore --source Fly
+```
+
+### Publish Package
+
+```bash
+# Pack
+dotnet pack -c Release
+
+# Push
+dotnet nuget push bin/Release/*.nupkg \
+    --source Fly \
+    --api-key fly_abc123...
+```
+
+---
+
+## Global Tools
+
+Install .NET tools from Fly:
+
+```bash
+dotnet tool install -g MyTool --add-source "https://your-team.jfrog.io/artifactory/api/nuget/nuget/v3/index.json"
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+- name: Configure dotnet
+  run: |
+    dotnet nuget add source \
+      "${{ vars.FLY_NUGET_URL }}" \
+      --name Fly \
+      --username ${{ secrets.FLY_USER }} \
+      --password ${{ secrets.FLY_TOKEN }} \
+      --store-password-in-clear-text
+
+- name: Restore
+  run: dotnet restore
+
+- name: Build
+  run: dotnet build -c Release
+
+- name: Publish
+  run: dotnet nuget push **/*.nupkg --source Fly --api-key ${{ secrets.FLY_TOKEN }}
+```
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="NuGet" icon="microsoft" href="/package-managers/dotnet/nuget">
+    NuGet configuration
+  </Card>
+  <Card title="Package Managers" icon="box" href="/package-managers/overview">
+    All package managers
+  </Card>
+</CardGroup>
+

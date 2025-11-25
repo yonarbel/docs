@@ -1,0 +1,345 @@
+---
+title: "Fly Chat"
+sidebarTitle: "Fly Chat"
+description: "AI-powered assistant for natural language queries about your artifacts and releases"
+icon: "message-bot"
+---
+
+## Overview
+
+Fly Chat is an AI-powered assistant built into Fly Web that helps you find artifacts, manage releases, and navigate your registry using natural language.
+
+---
+
+## Accessing Fly Chat
+
+### Web Interface
+
+Access Fly Chat from the Fly Web interface:
+
+1. Click the **Chat** icon in the sidebar
+2. Or press `Cmd/Ctrl + J` from anywhere
+
+### Desktop App
+
+Use Fly Chat through the Desktop App's MCP integration in your IDE.
+
+---
+
+## What Can Fly Chat Do?
+
+<CardGroup cols={2}>
+  <Card title="Search Artifacts" icon="magnifying-glass">
+    Find packages using natural language descriptions
+  </Card>
+  <Card title="Release Information" icon="tag">
+    Get details about releases, changelogs, and deployments
+  </Card>
+  <Card title="Deployment Assistance" icon="rocket">
+    Help with deployment commands and configuration
+  </Card>
+  <Card title="Troubleshooting" icon="wrench">
+    Diagnose issues and suggest solutions
+  </Card>
+</CardGroup>
+
+---
+
+## Example Queries
+
+### Finding Artifacts
+
+<AccordionGroup>
+  <Accordion title="Search by Description" icon="magnifying-glass" defaultOpen>
+    ```
+    "Find me a library for handling user authentication"
+    "What packages do we have for date formatting?"
+    "Show me all Docker images for the API"
+    ```
+  </Accordion>
+  
+  <Accordion title="Search by Time" icon="clock">
+    ```
+    "What was published yesterday?"
+    "Show me releases from last week"
+    "What changed since Monday?"
+    ```
+  </Accordion>
+  
+  <Accordion title="Search by Author" icon="user">
+    ```
+    "What has John published recently?"
+    "Show me packages from the platform team"
+    "Who published the auth-service?"
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Release Queries
+
+```
+"What's in version 2.1.0 of the API?"
+"What changed between v2.0 and v2.1?"
+"When was the auth service last released?"
+"What's currently deployed to production?"
+```
+
+### Deployment Help
+
+```
+"How do I deploy version 2.1.0 to staging?"
+"What's the status of the production deployment?"
+"Roll back the API to the previous version"
+"Show me the deployment history for frontend"
+```
+
+### Configuration Help
+
+```
+"How do I configure npm for my project?"
+"What's the command to publish a Docker image?"
+"How do I set up GitHub Actions with Fly?"
+"Generate a workflow for my Node.js project"
+```
+
+---
+
+## Interactive Features
+
+### Code Generation
+
+Ask Fly Chat to generate configuration code:
+
+<Tabs>
+  <Tab title="CI/CD Workflows">
+    **Query:** "Generate a GitHub Actions workflow for my npm package"
+    
+    **Response:**
+    ```yaml
+    name: Publish to Fly
+    
+    on:
+      release:
+        types: [published]
+    
+    jobs:
+      publish:
+        runs-on: ubuntu-latest
+        permissions:
+          contents: read
+          id-token: write
+        
+        steps:
+          - uses: actions/checkout@v4
+          
+          - uses: jfrog/fly-action@v1
+            with:
+              fly-url: ${{ vars.FLY_URL }}
+          
+          - run: npm ci
+          - run: npm test
+          - run: npm publish
+    ```
+  </Tab>
+  
+  <Tab title="Package Config">
+    **Query:** "How do I configure pip to use our registry?"
+    
+    **Response:**
+    ```ini
+    # ~/.pip/pip.conf
+    [global]
+    index-url = https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+    trusted-host = your-team.jfrog.io
+    ```
+  </Tab>
+  
+  <Tab title="Kubernetes">
+    **Query:** "Generate a deployment for my Docker image"
+    
+    **Response:**
+    ```yaml
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: my-app
+    spec:
+      replicas: 3
+      selector:
+        matchLabels:
+          app: my-app
+      template:
+        spec:
+          imagePullSecrets:
+            - name: fly-registry-secret
+          containers:
+            - name: app
+              image: your-team.jfrog.io/docker/my-app:2.1.0
+    ```
+  </Tab>
+</Tabs>
+
+### Quick Actions
+
+Fly Chat can execute actions directly:
+
+| Command | Action |
+|---------|--------|
+| "Publish current project" | Opens publish dialog |
+| "Create a release" | Opens release creation |
+| "Generate access token" | Opens token creation |
+| "Connect a repository" | Opens Git connection |
+
+---
+
+## Context Awareness
+
+### Project Context
+
+When used in the Desktop App/IDE, Fly Chat understands your current project:
+
+```
+"Publish this package" → Uses current project's package.json
+"What version is this?" → Checks current project version
+"Update dependencies" → Analyzes project's dependencies
+```
+
+### Repository Context
+
+In Fly Web, Fly Chat understands the current page context:
+
+```
+(On artifact page) "Show me older versions" → Shows that artifact's versions
+(On release page) "Compare to previous" → Compares current release
+(On repo page) "What's been published?" → Shows repo's artifacts
+```
+
+---
+
+## Advanced Usage
+
+### Multi-Step Workflows
+
+Chain commands together:
+
+```
+"Find the auth-service, check what version is in production, 
+and tell me what changed since the last deployment"
+```
+
+### Comparative Analysis
+
+```
+"Compare our utils package with lodash - what's the size difference?"
+"How many downloads did we have this month vs last month?"
+"Which package has the most dependencies?"
+```
+
+### Troubleshooting
+
+```
+"Why did my publish fail?"
+"What's wrong with my workflow?"
+"Help me debug this deployment error: [paste error]"
+```
+
+---
+
+## Conversation History
+
+### Viewing History
+
+Click the history icon to see previous conversations:
+
+- Recent queries
+- Saved conversations
+- Starred messages
+
+### Saving Conversations
+
+Save useful conversations for reference:
+
+1. Click the **Star** icon on any message
+2. Access starred messages from the history panel
+
+### Clearing History
+
+Clear your conversation history:
+
+1. Click **History** → **Clear History**
+2. Confirm the action
+
+---
+
+## Tips for Better Results
+
+<CardGroup cols={2}>
+  <Card title="Be Specific" icon="bullseye">
+    Include package names, versions, and specific details
+  </Card>
+  <Card title="Provide Context" icon="circle-info">
+    Mention the package type, repository, or environment
+  </Card>
+  <Card title="Ask Follow-ups" icon="comments">
+    Continue the conversation to drill deeper
+  </Card>
+  <Card title="Use Examples" icon="lightbulb">
+    Reference specific examples when asking for help
+  </Card>
+</CardGroup>
+
+### Good Query Examples
+
+| Instead of... | Try... |
+|---------------|--------|
+| "Find auth" | "Find npm packages for OAuth2 authentication" |
+| "Deploy it" | "Deploy auth-service v2.1.0 to staging" |
+| "What changed?" | "What changed in @myteam/utils since last week?" |
+| "Help" | "Help me configure Docker to use our registry" |
+
+---
+
+## Limitations
+
+<Warning>
+  Fly Chat has some limitations:
+  
+  - Cannot access external websites or documentation
+  - Cannot modify code files directly
+  - Cannot access private data outside your Fly workspace
+  - Responses may need verification for critical operations
+</Warning>
+
+---
+
+## Privacy & Security
+
+### Data Handling
+
+- Queries are processed securely
+- Conversation history is stored in your account
+- No data is shared with third parties
+- Enterprise customers can opt out of AI features
+
+### Sensitive Information
+
+<Warning>
+  Avoid sharing sensitive information like:
+  - Access tokens or passwords
+  - Personal identification information
+  - Proprietary business data
+</Warning>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Desktop App" icon="desktop" href="/desktop-app/overview">
+    Use Chat in your IDE
+  </Card>
+  <Card title="Artifacts" icon="box" href="/fly-web/artifacts">
+    Browse artifacts manually
+  </Card>
+</CardGroup>
+

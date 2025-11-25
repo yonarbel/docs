@@ -1,0 +1,215 @@
+---
+title: "Go"
+sidebarTitle: "Go Modules"
+description: "Configure Go modules to use your Fly Registry as a proxy"
+icon: "golang"
+---
+
+## Overview
+
+JFrog Fly provides a Go module proxy that caches modules and provides access to both public and private Go modules.
+
+---
+
+## Quick Setup
+
+```bash
+# Using Fly Desktop App
+fly config go
+```
+
+---
+
+## Manual Configuration
+
+### Set GOPROXY
+
+```bash
+export GOPROXY="https://your-team.jfrog.io/artifactory/api/go/go,direct"
+export GONOSUMDB="github.com/your-org/*"
+```
+
+### With Authentication
+
+```bash
+export GOPROXY="https://your-email:fly_abc123@your-team.jfrog.io/artifactory/api/go/go,direct"
+```
+
+### Using .netrc
+
+Create `~/.netrc`:
+
+```
+machine your-team.jfrog.io
+login your-email@example.com
+password fly_abc123...
+```
+
+Then set GOPROXY without credentials:
+
+```bash
+export GOPROXY="https://your-team.jfrog.io/artifactory/api/go/go,direct"
+```
+
+---
+
+## go.mod Configuration
+
+### Standard Configuration
+
+```go
+module github.com/your-org/your-project
+
+go 1.21
+
+require (
+    github.com/your-org/internal-lib v1.2.0
+    github.com/gin-gonic/gin v1.9.1
+    github.com/sirupsen/logrus v1.9.3
+)
+```
+
+### Private Modules
+
+For private modules, configure GOPRIVATE:
+
+```bash
+export GOPRIVATE="github.com/your-org/*"
+```
+
+---
+
+## Installing Modules
+
+```bash
+# Install dependencies
+go mod download
+
+# Install specific module
+go get github.com/your-org/internal-lib@v1.2.0
+
+# Update all dependencies
+go get -u ./...
+
+# Tidy dependencies
+go mod tidy
+```
+
+---
+
+## Publishing Modules
+
+### Using Git Tags
+
+Go modules are published by tagging releases in Git:
+
+```bash
+# Tag a new version
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+### Version Format
+
+Go follows semantic versioning:
+- `v1.0.0` - Initial release
+- `v1.1.0` - Minor version (new features)
+- `v1.1.1` - Patch version (bug fixes)
+- `v2.0.0` - Major version (breaking changes)
+
+<Note>
+  For v2+, update your module path to include the major version: `module github.com/your-org/project/v2`
+</Note>
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Go Build
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      
+      - name: Configure Go Proxy
+        run: |
+          echo "machine ${{ vars.FLY_HOST }} login ${{ secrets.FLY_USER }} password ${{ secrets.FLY_TOKEN }}" >> ~/.netrc
+          go env -w GOPROXY="https://${{ vars.FLY_HOST }}/artifactory/api/go/go,direct"
+          go env -w GONOSUMDB="github.com/your-org/*"
+      
+      - name: Download dependencies
+        run: go mod download
+      
+      - name: Build
+        run: go build ./...
+      
+      - name: Test
+        run: go test ./...
+```
+
+---
+
+## Vendor Directory
+
+If using vendor directory:
+
+```bash
+# Vendor dependencies
+go mod vendor
+
+# Build with vendor
+go build -mod=vendor ./...
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized" icon="lock">
+    **Solutions:**
+    1. Verify .netrc credentials
+    2. Check GOPRIVATE includes your private modules
+    3. Verify token hasn't expired
+  </Accordion>
+  
+  <Accordion title="Module Not Found" icon="magnifying-glass">
+    **Solutions:**
+    1. Check module path is correct
+    2. Verify tag exists in Git repository
+    3. Try `go clean -modcache` and retry
+  </Accordion>
+  
+  <Accordion title="Checksum Mismatch" icon="shield-xmark">
+    **Solutions:**
+    1. Add module to GONOSUMDB
+    2. Check module hasn't been modified
+    3. Clear module cache: `go clean -modcache`
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Maven" icon="java" href="/package-managers/java/maven">
+    Java with Maven
+  </Card>
+  <Card title="Package Managers" icon="box" href="/package-managers/overview">
+    All package managers
+  </Card>
+</CardGroup>
+

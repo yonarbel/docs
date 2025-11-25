@@ -1,0 +1,308 @@
+---
+title: "Package Managers"
+sidebarTitle: "Overview"
+description: "Configure your package managers to work with JFrog Fly Registry"
+icon: "box-open"
+---
+
+## Overview
+
+JFrog Fly supports all major package managers and registries. This section provides detailed configuration guides for each supported ecosystem.
+
+---
+
+## Supported Package Managers
+
+<CardGroup cols={3}>
+  <Card title="Containers" icon="docker" href="/package-managers/containers/docker">
+    Docker, Podman, and OCI images
+  </Card>
+  <Card title="JavaScript" icon="js" href="/package-managers/javascript/npm">
+    npm, Yarn, pnpm
+  </Card>
+  <Card title="Python" icon="python" href="/package-managers/python/pip">
+    pip, Twine, Pipenv, Poetry
+  </Card>
+  <Card title="Go" icon="golang" href="/package-managers/go/overview">
+    Go modules
+  </Card>
+  <Card title="Java" icon="java" href="/package-managers/java/maven">
+    Maven, Gradle
+  </Card>
+  <Card title=".NET" icon="microsoft" href="/package-managers/dotnet/nuget">
+    NuGet, dotnet CLI
+  </Card>
+</CardGroup>
+
+---
+
+## Quick Setup
+
+The fastest way to configure all your package managers is using the Fly Desktop App:
+
+```bash
+# Auto-detect and configure all package managers
+fly config auto
+```
+
+This command:
+1. Detects installed package managers
+2. Configures each to use your Fly Registry
+3. Sets up authentication automatically
+
+---
+
+## Configuration Methods
+
+<Tabs>
+  <Tab title="Automatic (Recommended)">
+    ### Fly Desktop App
+    
+    The easiest method - handles everything for you:
+    
+    ```bash
+    # Configure all detected package managers
+    fly config auto
+    
+    # Configure specific package manager
+    fly config npm
+    fly config pip
+    fly config maven
+    fly config docker
+    ```
+  </Tab>
+  
+  <Tab title="Manual">
+    ### Manual Configuration
+    
+    Configure each package manager directly by editing its configuration file. See individual package manager guides for details.
+  </Tab>
+  
+  <Tab title="Environment Variables">
+    ### Environment Variables
+    
+    Some package managers support configuration via environment variables:
+    
+    ```bash
+    # npm
+    export NPM_CONFIG_REGISTRY="https://myteam.jfrog.io/artifactory/api/npm/npm/"
+    
+    # pip
+    export PIP_INDEX_URL="https://myteam.jfrog.io/artifactory/api/pypi/pypi/simple"
+    
+    # Go
+    export GOPROXY="https://myteam.jfrog.io/artifactory/api/go/go"
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Registry URLs
+
+Your Fly Registry provides different endpoints for each package type:
+
+| Package Type | Registry URL |
+|--------------|--------------|
+| **npm** | `https://your-team.jfrog.io/artifactory/api/npm/npm/` |
+| **pip** | `https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple` |
+| **Docker** | `your-team.jfrog.io` |
+| **Maven** | `https://your-team.jfrog.io/artifactory/maven-remote` |
+| **Go** | `https://your-team.jfrog.io/artifactory/api/go/go` |
+| **NuGet** | `https://your-team.jfrog.io/artifactory/api/nuget/nuget` |
+| **Helm** | `https://your-team.jfrog.io/artifactory/helm` |
+
+<Info>
+  Replace `your-team` with your actual Fly subdomain.
+</Info>
+
+---
+
+## Authentication
+
+### Token-Based Authentication
+
+Most package managers use access tokens for authentication:
+
+```bash
+# Generate a token
+fly auth token create --name "dev-machine" --expiry 90d
+
+# Output:
+# Token created: fly_abc123_xyz789...
+# 
+# Use this token for authentication:
+# - Username: your-email@example.com
+# - Password: fly_abc123_xyz789...
+```
+
+### OIDC Authentication (CI/CD)
+
+For CI/CD pipelines, use OIDC for tokenless authentication:
+
+```yaml
+# GitHub Actions example
+- uses: jfrog/fly-action@v1
+  with:
+    fly-url: ${{ vars.FLY_URL }}
+    # No token needed - uses OIDC
+```
+
+---
+
+## Remote Repositories
+
+Fly can proxy and cache packages from public registries:
+
+### Benefits
+
+<CardGroup cols={2}>
+  <Card title="Faster Builds" icon="bolt">
+    Cached packages download faster from your local registry
+  </Card>
+  <Card title="Reliability" icon="shield">
+    Continue working even if public registries are down
+  </Card>
+  <Card title="Security" icon="lock">
+    Scan packages before allowing them into your network
+  </Card>
+  <Card title="Compliance" icon="clipboard-check">
+    Maintain a record of all packages used
+  </Card>
+</CardGroup>
+
+### Configuring Remotes
+
+Fly automatically proxies the following public registries:
+
+| Local Repo | Remote Source |
+|------------|---------------|
+| `npm-remote` | registry.npmjs.org |
+| `pypi-remote` | pypi.org |
+| `maven-central` | repo.maven.apache.org |
+| `docker-hub` | hub.docker.com |
+| `go-remote` | proxy.golang.org |
+
+---
+
+## Virtual Repositories
+
+Virtual repositories aggregate multiple sources:
+
+```
+npm (virtual)
+├── npm-local (your packages)
+├── npm-remote (npmjs.org)
+└── npm-partners (partner packages)
+```
+
+When you request a package, Fly searches all repositories in order.
+
+---
+
+## Publishing Packages
+
+### General Workflow
+
+<Steps>
+  <Step title="Authenticate">
+    Ensure you're authenticated with Fly
+  </Step>
+  
+  <Step title="Configure">
+    Configure your package manager to use Fly Registry
+  </Step>
+  
+  <Step title="Build">
+    Build your package as usual
+  </Step>
+  
+  <Step title="Publish">
+    Publish using your package manager or Fly CLI
+  </Step>
+</Steps>
+
+### Using Fly CLI
+
+```bash
+# Publish any package type
+fly publish
+
+# With options
+fly publish --tag beta
+fly publish --version 2.0.0-rc.1
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Authentication Failed" icon="lock">
+    **Error:** `401 Unauthorized` or `Authentication required`
+    
+    **Solutions:**
+    1. Check token hasn't expired: `fly auth status`
+    2. Reconfigure package manager: `fly config <manager>`
+    3. Verify credentials are set correctly
+  </Accordion>
+  
+  <Accordion title="Package Not Found" icon="magnifying-glass">
+    **Error:** `404 Not Found` or `Package not found`
+    
+    **Solutions:**
+    1. Verify package name and version
+    2. Check you're using the correct registry URL
+    3. Ensure remote repository is enabled
+  </Accordion>
+  
+  <Accordion title="Publish Failed" icon="upload">
+    **Error:** `Failed to publish` or `Permission denied`
+    
+    **Solutions:**
+    1. Verify you have publish permissions
+    2. Check version doesn't already exist
+    3. Ensure package.json/setup.py is valid
+  </Accordion>
+  
+  <Accordion title="SSL/TLS Errors" icon="shield-xmark">
+    **Error:** `SSL certificate problem` or `UNABLE_TO_VERIFY_LEAF_SIGNATURE`
+    
+    **Solutions:**
+    1. Update CA certificates
+    2. Check proxy isn't intercepting traffic
+    3. Verify registry URL is correct (https://)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Package Manager Guides
+
+<CardGroup cols={2}>
+  <Card title="Docker" icon="docker" href="/package-managers/containers/docker">
+    Container images with Docker
+  </Card>
+  <Card title="Podman" icon="box" href="/package-managers/containers/podman">
+    Container images with Podman
+  </Card>
+  <Card title="npm" icon="npm" href="/package-managers/javascript/npm">
+    JavaScript packages
+  </Card>
+  <Card title="pip" icon="python" href="/package-managers/python/pip">
+    Python packages
+  </Card>
+  <Card title="Maven" icon="java" href="/package-managers/java/maven">
+    Java with Maven
+  </Card>
+  <Card title="Gradle" icon="java" href="/package-managers/java/gradle">
+    Java with Gradle
+  </Card>
+  <Card title="Go" icon="golang" href="/package-managers/go/overview">
+    Go modules
+  </Card>
+  <Card title="NuGet" icon="microsoft" href="/package-managers/dotnet/nuget">
+    .NET packages
+  </Card>
+</CardGroup>
+

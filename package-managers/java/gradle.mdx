@@ -1,0 +1,265 @@
+---
+title: "Gradle"
+sidebarTitle: "Gradle"
+description: "Configure Gradle to use your Fly Registry for Java/Kotlin dependencies"
+icon: "java"
+---
+
+## Overview
+
+Configure Gradle to resolve dependencies from and publish artifacts to your JFrog Fly Registry.
+
+---
+
+## Quick Setup
+
+```bash
+# Using Fly Desktop App
+fly config gradle
+```
+
+---
+
+## Manual Configuration
+
+### gradle.properties
+
+Create or edit `~/.gradle/gradle.properties`:
+
+```properties
+flyUrl=https://your-team.jfrog.io/artifactory
+flyUser=your-email@example.com
+flyPassword=fly_abc123...
+```
+
+### build.gradle (Groovy)
+
+```groovy
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'com.myteam'
+version = '1.0.0'
+
+repositories {
+    maven {
+        url "${flyUrl}/maven-remote"
+        credentials {
+            username = flyUser
+            password = flyPassword
+        }
+    }
+    mavenCentral() // Fallback
+}
+
+dependencies {
+    implementation 'com.myteam:internal-lib:1.0.0'
+    implementation 'org.springframework.boot:spring-boot-starter-web:3.2.0'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name = 'fly'
+            url = "${flyUrl}/maven-releases"
+            credentials {
+                username = flyUser
+                password = flyPassword
+            }
+        }
+    }
+}
+```
+
+### build.gradle.kts (Kotlin DSL)
+
+```kotlin
+plugins {
+    `java-library`
+    `maven-publish`
+}
+
+group = "com.myteam"
+version = "1.0.0"
+
+val flyUrl: String by project
+val flyUser: String by project
+val flyPassword: String by project
+
+repositories {
+    maven {
+        url = uri("$flyUrl/maven-remote")
+        credentials {
+            username = flyUser
+            password = flyPassword
+        }
+    }
+    mavenCentral()
+}
+
+dependencies {
+    implementation("com.myteam:internal-lib:1.0.0")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.2.0")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+        }
+    }
+    repositories {
+        maven {
+            name = "fly"
+            url = uri("$flyUrl/maven-releases")
+            credentials {
+                username = flyUser
+                password = flyPassword
+            }
+        }
+    }
+}
+```
+
+---
+
+## Building and Publishing
+
+### Build
+
+```bash
+# Build project
+./gradlew build
+
+# Build without tests
+./gradlew build -x test
+```
+
+### Publish
+
+```bash
+# Publish to Fly
+./gradlew publish
+
+# Publish to specific repository
+./gradlew publishMavenPublicationToFlyRepository
+```
+
+---
+
+## Multi-Project Builds
+
+### settings.gradle.kts
+
+```kotlin
+rootProject.name = "my-project"
+
+include("core", "api", "service")
+```
+
+### Root build.gradle.kts
+
+```kotlin
+subprojects {
+    apply(plugin = "java-library")
+    apply(plugin = "maven-publish")
+    
+    group = "com.myteam"
+    
+    repositories {
+        maven {
+            url = uri("${rootProject.extra["flyUrl"]}/maven-remote")
+            credentials {
+                username = rootProject.extra["flyUser"] as String
+                password = rootProject.extra["flyPassword"] as String
+            }
+        }
+    }
+}
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Gradle Build
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - uses: gradle/gradle-build-action@v2
+      
+      - name: Build
+        run: ./gradlew build
+        env:
+          flyUrl: https://${{ vars.FLY_HOST }}/artifactory
+          flyUser: ${{ secrets.FLY_USER }}
+          flyPassword: ${{ secrets.FLY_TOKEN }}
+      
+      - name: Publish
+        if: github.event_name == 'release'
+        run: ./gradlew publish
+        env:
+          flyUrl: https://${{ vars.FLY_HOST }}/artifactory
+          flyUser: ${{ secrets.FLY_USER }}
+          flyPassword: ${{ secrets.FLY_TOKEN }}
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized" icon="lock">
+    **Solutions:**
+    1. Verify credentials in gradle.properties
+    2. Check property names match
+    3. Verify token hasn't expired
+  </Accordion>
+  
+  <Accordion title="Dependency Resolution Failed" icon="magnifying-glass">
+    **Solutions:**
+    1. Run `./gradlew --refresh-dependencies`
+    2. Check repository URL is correct
+    3. Verify artifact exists in Fly
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Maven" icon="java" href="/package-managers/java/maven">
+    Maven configuration
+  </Card>
+  <Card title="Package Managers" icon="box" href="/package-managers/overview">
+    All package managers
+  </Card>
+</CardGroup>
+

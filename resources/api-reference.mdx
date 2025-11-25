@@ -1,0 +1,247 @@
+---
+title: "API Reference"
+sidebarTitle: "API Reference"
+description: "REST API reference for JFrog Fly"
+icon: "code"
+---
+
+## Overview
+
+JFrog Fly provides a REST API for programmatic access to all features.
+
+**Base URL:**
+```
+https://your-team.jfrog.io/artifactory/api
+```
+
+---
+
+## Authentication
+
+All API requests require authentication via access token:
+
+```bash
+curl -H "Authorization: Bearer fly_abc123..." \
+  https://your-team.jfrog.io/artifactory/api/...
+```
+
+Or using Basic Auth:
+
+```bash
+curl -u "username:token" \
+  https://your-team.jfrog.io/artifactory/api/...
+```
+
+---
+
+## System
+
+### Ping
+
+Check API availability:
+
+```bash
+GET /system/ping
+```
+
+```bash
+curl https://your-team.jfrog.io/artifactory/api/system/ping
+```
+
+**Response:** `OK`
+
+### Version
+
+Get system version:
+
+```bash
+GET /system/version
+```
+
+---
+
+## Artifacts
+
+### Search Artifacts
+
+```bash
+GET /search/artifact?name={query}
+```
+
+**Parameters:**
+- `name` - Artifact name pattern
+- `repos` - Repository keys (comma-separated)
+
+### Get Artifact Info
+
+```bash
+GET /storage/{repo}/{path}
+```
+
+### Download Artifact
+
+```bash
+GET /{repo}/{path}
+```
+
+### Upload Artifact
+
+```bash
+PUT /{repo}/{path}
+```
+
+**Headers:**
+- `Content-Type: application/octet-stream`
+- `X-Checksum-Sha256: {sha256}`
+
+### Delete Artifact
+
+```bash
+DELETE /{repo}/{path}
+```
+
+---
+
+## Repositories
+
+### List Repositories
+
+```bash
+GET /repositories
+```
+
+**Query Parameters:**
+- `type` - Filter by type (local, remote, virtual)
+- `packageType` - Filter by package type (npm, docker, etc.)
+
+### Get Repository Info
+
+```bash
+GET /repositories/{repoKey}
+```
+
+---
+
+## NPM
+
+### Get Package Info
+
+```bash
+GET /npm/{repo}/{package}
+```
+
+### Publish Package
+
+```bash
+PUT /npm/{repo}/{package}
+Content-Type: application/json
+```
+
+---
+
+## Docker
+
+### List Tags
+
+```bash
+GET /docker/{repo}/v2/{image}/tags/list
+```
+
+### Get Manifest
+
+```bash
+GET /docker/{repo}/v2/{image}/manifests/{tag}
+```
+
+### Delete Tag
+
+```bash
+DELETE /docker/{repo}/v2/{image}/manifests/{tag}
+```
+
+---
+
+## PyPI
+
+### Simple Index
+
+```bash
+GET /pypi/{repo}/simple/{package}/
+```
+
+### Upload Package
+
+```bash
+POST /pypi/{repo}
+Content-Type: multipart/form-data
+```
+
+---
+
+## Maven
+
+### Get POM
+
+```bash
+GET /maven/{repo}/{groupPath}/{artifactId}/{version}/{artifactId}-{version}.pom
+```
+
+### Deploy Artifact
+
+```bash
+PUT /maven/{repo}/{groupPath}/{artifactId}/{version}/{filename}
+```
+
+---
+
+## Error Responses
+
+| Status | Description |
+|--------|-------------|
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+| 500 | Server Error |
+
+**Error Format:**
+```json
+{
+  "errors": [
+    {
+      "status": 401,
+      "message": "Authentication required"
+    }
+  ]
+}
+```
+
+---
+
+## Rate Limits
+
+| Endpoint | Limit |
+|----------|-------|
+| API calls | 1000/minute |
+| Downloads | Unlimited |
+| Uploads | Based on plan |
+
+Rate limit headers:
+- `X-RateLimit-Limit`
+- `X-RateLimit-Remaining`
+- `X-RateLimit-Reset`
+
+---
+
+## SDKs
+
+<CardGroup cols={2}>
+  <Card title="CLI" icon="terminal" href="/desktop-app/commands">
+    Fly CLI tool
+  </Card>
+  <Card title="GitHub Action" icon="github">
+    jfrog/fly-action@v1
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,373 @@
+---
+title: "npm"
+sidebarTitle: "npm"
+description: "Configure npm, Yarn, and pnpm to use your Fly Registry"
+icon: "npm"
+---
+
+## Overview
+
+JFrog Fly provides a full npm registry for publishing and consuming JavaScript and TypeScript packages. It supports npm, Yarn, and pnpm.
+
+---
+
+## Quick Setup
+
+The fastest way to configure npm:
+
+```bash
+# Using Fly Desktop App
+fly config npm
+```
+
+This automatically configures your `.npmrc` file.
+
+---
+
+## Manual Configuration
+
+### Global Configuration
+
+Configure npm globally in `~/.npmrc`:
+
+```ini
+registry=https://your-team.jfrog.io/artifactory/api/npm/npm/
+//your-team.jfrog.io/artifactory/api/npm/npm/:_authToken=${FLY_NPM_TOKEN}
+always-auth=true
+```
+
+### Project Configuration
+
+Create a `.npmrc` in your project root:
+
+```ini
+registry=https://your-team.jfrog.io/artifactory/api/npm/npm/
+//your-team.jfrog.io/artifactory/api/npm/npm/:_authToken=${FLY_NPM_TOKEN}
+```
+
+### Scoped Packages
+
+Configure for a specific scope:
+
+```ini
+@myteam:registry=https://your-team.jfrog.io/artifactory/api/npm/npm/
+//your-team.jfrog.io/artifactory/api/npm/npm/:_authToken=${FLY_NPM_TOKEN}
+```
+
+This routes `@myteam/*` packages to Fly while other packages use npm's default registry.
+
+---
+
+## Authentication
+
+### Using Access Token
+
+```bash
+# Set token as environment variable
+export FLY_NPM_TOKEN="fly_abc123..."
+
+# Or configure directly
+npm config set //your-team.jfrog.io/artifactory/api/npm/npm/:_authToken fly_abc123...
+```
+
+### Using npm login
+
+```bash
+npm login --registry https://your-team.jfrog.io/artifactory/api/npm/npm/
+```
+
+Enter your credentials:
+- **Username**: Your email
+- **Password**: Your Fly access token
+- **Email**: Your email
+
+---
+
+## Installing Packages
+
+### From Your Registry
+
+```bash
+# Install from Fly registry (when configured globally)
+npm install @myteam/utils
+
+# Specify registry explicitly
+npm install @myteam/utils --registry https://your-team.jfrog.io/artifactory/api/npm/npm/
+```
+
+### Using Public Packages
+
+When Fly is configured to proxy npmjs.org, public packages work normally:
+
+```bash
+npm install lodash  # Proxied through Fly
+```
+
+---
+
+## Publishing Packages
+
+### Basic Publishing
+
+```bash
+# Publish to Fly registry
+npm publish
+
+# Publish with specific registry
+npm publish --registry https://your-team.jfrog.io/artifactory/api/npm/npm/
+```
+
+### Publishing Scoped Packages
+
+Configure your `package.json`:
+
+```json
+{
+  "name": "@myteam/utils",
+  "version": "1.0.0",
+  "publishConfig": {
+    "registry": "https://your-team.jfrog.io/artifactory/api/npm/npm/"
+  }
+}
+```
+
+Then simply:
+
+```bash
+npm publish
+```
+
+### Publishing with Tags
+
+```bash
+# Publish with beta tag
+npm publish --tag beta
+
+# Publish with next tag
+npm publish --tag next
+```
+
+---
+
+## package.json Configuration
+
+### Standard Configuration
+
+```json
+{
+  "name": "@myteam/my-package",
+  "version": "1.0.0",
+  "description": "My awesome package",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "publishConfig": {
+    "registry": "https://your-team.jfrog.io/artifactory/api/npm/npm/",
+    "access": "restricted"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/myteam/my-package.git"
+  }
+}
+```
+
+---
+
+## Yarn Configuration
+
+### Yarn Classic (v1)
+
+Create `.yarnrc`:
+
+```ini
+registry "https://your-team.jfrog.io/artifactory/api/npm/npm/"
+```
+
+Or for scoped packages:
+
+```ini
+"@myteam:registry" "https://your-team.jfrog.io/artifactory/api/npm/npm/"
+```
+
+### Yarn Berry (v2+)
+
+Create `.yarnrc.yml`:
+
+```yaml
+npmRegistryServer: "https://your-team.jfrog.io/artifactory/api/npm/npm/"
+
+npmScopes:
+  myteam:
+    npmRegistryServer: "https://your-team.jfrog.io/artifactory/api/npm/npm/"
+    npmAuthToken: "${FLY_NPM_TOKEN}"
+```
+
+---
+
+## pnpm Configuration
+
+Create `.npmrc`:
+
+```ini
+registry=https://your-team.jfrog.io/artifactory/api/npm/npm/
+//your-team.jfrog.io/artifactory/api/npm/npm/:_authToken=${FLY_NPM_TOKEN}
+```
+
+Or use pnpm-specific configuration:
+
+```bash
+pnpm config set registry https://your-team.jfrog.io/artifactory/api/npm/npm/
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Publish npm Package
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://your-team.jfrog.io/artifactory/api/npm/npm/'
+      
+      - name: Setup JFrog Fly
+        uses: jfrog/fly-action@v1
+        with:
+          fly-url: ${{ vars.FLY_URL }}
+      
+      - run: npm ci
+      - run: npm test
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.FLY_NPM_TOKEN }}
+```
+
+### GitLab CI
+
+```yaml
+publish:
+  stage: deploy
+  image: node:20
+  script:
+    - echo "//your-team.jfrog.io/artifactory/api/npm/npm/:_authToken=${FLY_NPM_TOKEN}" > .npmrc
+    - npm ci
+    - npm test
+    - npm publish
+  only:
+    - tags
+```
+
+---
+
+## Monorepo Support
+
+### Lerna
+
+Configure `lerna.json`:
+
+```json
+{
+  "packages": ["packages/*"],
+  "version": "independent",
+  "command": {
+    "publish": {
+      "registry": "https://your-team.jfrog.io/artifactory/api/npm/npm/"
+    }
+  }
+}
+```
+
+### Turborepo
+
+Root `.npmrc`:
+
+```ini
+registry=https://your-team.jfrog.io/artifactory/api/npm/npm/
+//your-team.jfrog.io/artifactory/api/npm/npm/:_authToken=${FLY_NPM_TOKEN}
+```
+
+### Nx
+
+Configure in `nx.json` or project-level `.npmrc` files.
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized" icon="lock">
+    **Error:** `npm ERR! 401 Unauthorized`
+    
+    **Solutions:**
+    1. Check token is set correctly: `npm config get //your-team.jfrog.io/artifactory/api/npm/npm/:_authToken`
+    2. Verify token hasn't expired
+    3. Re-authenticate: `npm login --registry https://your-team.jfrog.io/artifactory/api/npm/npm/`
+  </Accordion>
+  
+  <Accordion title="404 Not Found" icon="magnifying-glass">
+    **Error:** `npm ERR! 404 Not Found - GET https://your-team.jfrog.io/.../package-name`
+    
+    **Solutions:**
+    1. Verify package exists in registry
+    2. Check registry URL is correct
+    3. Ensure remote repository is enabled for npm
+  </Accordion>
+  
+  <Accordion title="403 Forbidden" icon="ban">
+    **Error:** `npm ERR! 403 Forbidden - PUT`
+    
+    **Solutions:**
+    1. Verify you have publish permissions
+    2. Check package name doesn't conflict
+    3. Verify scoped package configuration
+  </Accordion>
+  
+  <Accordion title="UNABLE_TO_VERIFY_LEAF_SIGNATURE" icon="shield-xmark">
+    **Error:** `npm ERR! unable to verify the first certificate`
+    
+    **Solutions:**
+    1. Update CA certificates
+    2. Check corporate proxy settings
+    3. Temporarily: `npm config set strict-ssl false` (not recommended)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Python pip" icon="python" href="/package-managers/python/pip">
+    Configure pip
+  </Card>
+  <Card title="Automated Workflows" icon="gears" href="/developer-workflow/automated-workflows">
+    CI/CD setup
+  </Card>
+</CardGroup>
+

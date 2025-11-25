@@ -1,0 +1,324 @@
+---
+title: "pip"
+sidebarTitle: "pip"
+description: "Configure pip to install Python packages from your Fly Registry"
+icon: "python"
+---
+
+## Overview
+
+JFrog Fly provides a PyPI-compatible registry for Python packages. Configure pip to install both public and private packages from your Fly Registry.
+
+---
+
+## Quick Setup
+
+The fastest way to configure pip:
+
+```bash
+# Using Fly Desktop App
+fly config pip
+```
+
+This automatically creates the pip configuration file.
+
+---
+
+## Manual Configuration
+
+### Global Configuration
+
+<Tabs>
+  <Tab title="macOS/Linux">
+    Create or edit `~/.pip/pip.conf`:
+    
+    ```ini
+    [global]
+    index-url = https://your-email:fly_abc123@your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+    trusted-host = your-team.jfrog.io
+    ```
+  </Tab>
+  
+  <Tab title="Windows">
+    Create or edit `%APPDATA%\pip\pip.ini`:
+    
+    ```ini
+    [global]
+    index-url = https://your-email:fly_abc123@your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+    trusted-host = your-team.jfrog.io
+    ```
+  </Tab>
+</Tabs>
+
+### Project Configuration
+
+Create `pip.conf` in your project's virtual environment:
+
+```ini
+[global]
+index-url = https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+extra-index-url = https://pypi.org/simple/
+trusted-host = your-team.jfrog.io
+```
+
+---
+
+## Authentication
+
+### URL-Embedded Credentials
+
+Include credentials in the index URL:
+
+```ini
+[global]
+index-url = https://username:password@your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+```
+
+### Using Environment Variables
+
+```bash
+export PIP_INDEX_URL="https://${FLY_USER}:${FLY_TOKEN}@your-team.jfrog.io/artifactory/api/pypi/pypi/simple"
+```
+
+### Using keyring
+
+Install and configure keyring for secure credential storage:
+
+```bash
+pip install keyring
+keyring set your-team.jfrog.io your-email
+# Enter your Fly token when prompted
+```
+
+---
+
+## Installing Packages
+
+### Basic Installation
+
+```bash
+# Install from Fly registry
+pip install my-internal-package
+
+# Install specific version
+pip install my-internal-package==1.2.0
+
+# Install with explicit index
+pip install --index-url https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple my-package
+```
+
+### From requirements.txt
+
+```txt
+# requirements.txt
+--index-url https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+--extra-index-url https://pypi.org/simple/
+
+my-internal-package==1.2.0
+requests>=2.28.0
+pandas>=2.0.0
+```
+
+Then:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Using Extra Index URLs
+
+Configure multiple sources to use both your registry and PyPI:
+
+```ini
+[global]
+index-url = https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+extra-index-url = https://pypi.org/simple/
+trusted-host = your-team.jfrog.io
+```
+
+<Note>
+  When a package exists in multiple indexes, pip may choose either. For better control, use Fly's virtual repository to proxy PyPI.
+</Note>
+
+---
+
+## Virtual Environments
+
+### venv
+
+```bash
+# Create virtual environment
+python -m venv .venv
+
+# Activate
+source .venv/bin/activate  # macOS/Linux
+.venv\Scripts\activate     # Windows
+
+# Configure pip in venv
+pip config --site set global.index-url https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+```
+
+### Conda
+
+```bash
+# Configure conda to use pip with Fly
+conda config --add channels https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+```
+
+---
+
+## pyproject.toml
+
+Configure your project's `pyproject.toml`:
+
+```toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my-package"
+version = "1.0.0"
+description = "My awesome Python package"
+authors = [
+    { name = "Developer", email = "dev@example.com" }
+]
+dependencies = [
+    "requests>=2.28.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black",
+    "mypy",
+]
+
+[tool.setuptools]
+packages = ["my_package"]
+
+[[tool.pip.extra-index-url]]
+url = "https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple"
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Python Package
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Configure pip
+        run: |
+          pip config set global.index-url https://${{ secrets.FLY_USER }}:${{ secrets.FLY_TOKEN }}@${{ vars.FLY_URL }}/artifactory/api/pypi/pypi/simple
+          pip config set global.trusted-host ${{ vars.FLY_HOST }}
+      
+      - name: Install dependencies
+        run: |
+          pip install build twine
+          pip install -r requirements.txt
+      
+      - name: Build package
+        run: python -m build
+      
+      - name: Publish to Fly
+        run: |
+          twine upload --repository-url https://${{ vars.FLY_URL }}/artifactory/api/pypi/pypi \
+            -u ${{ secrets.FLY_USER }} \
+            -p ${{ secrets.FLY_TOKEN }} \
+            dist/*
+```
+
+### GitLab CI
+
+```yaml
+stages:
+  - test
+  - publish
+
+test:
+  stage: test
+  image: python:3.11
+  before_script:
+    - pip config set global.index-url https://${FLY_USER}:${FLY_TOKEN}@${FLY_HOST}/artifactory/api/pypi/pypi/simple
+  script:
+    - pip install -r requirements.txt
+    - pytest
+
+publish:
+  stage: publish
+  image: python:3.11
+  script:
+    - pip install build twine
+    - python -m build
+    - twine upload --repository-url https://${FLY_HOST}/artifactory/api/pypi/pypi -u ${FLY_USER} -p ${FLY_TOKEN} dist/*
+  only:
+    - tags
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized" icon="lock">
+    **Error:** `HTTPError: 401 Client Error: Unauthorized`
+    
+    **Solutions:**
+    1. Verify credentials are correct
+    2. Check URL encoding for special characters in password
+    3. Verify token hasn't expired
+  </Accordion>
+  
+  <Accordion title="SSL Certificate Error" icon="shield-xmark">
+    **Error:** `SSL: CERTIFICATE_VERIFY_FAILED`
+    
+    **Solutions:**
+    1. Add `trusted-host` to pip.conf
+    2. Update CA certificates: `pip install certifi`
+    3. Check corporate proxy settings
+  </Accordion>
+  
+  <Accordion title="Package Not Found" icon="magnifying-glass">
+    **Error:** `No matching distribution found`
+    
+    **Solutions:**
+    1. Verify package name and version
+    2. Check both private and public indexes are configured
+    3. Verify remote repository is synced
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Twine" icon="upload" href="/package-managers/python/twine">
+    Publishing with Twine
+  </Card>
+  <Card title="Pipenv" icon="lock" href="/package-managers/python/pipenv">
+    Pipenv configuration
+  </Card>
+</CardGroup>
+

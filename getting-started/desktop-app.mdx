@@ -1,0 +1,304 @@
+---
+title: "Desktop App Installation"
+sidebarTitle: "Desktop App"
+description: "Install and configure the Fly Desktop App to integrate with your local development environment"
+icon: "desktop"
+---
+
+## Overview
+
+The Fly Desktop App is your local agent that:
+
+<CardGroup cols={2}>
+  <Card title="Manages Package Managers" icon="box">
+    Automatically detects and configures npm, pip, Maven, and more
+  </Card>
+  <Card title="Enables Agentic Commands" icon="robot">
+    Integrates with your IDE for AI-powered artifact management
+  </Card>
+  <Card title="Syncs with Fly Registry" icon="rotate">
+    Keeps your local environment in sync with your team's registry
+  </Card>
+  <Card title="Provides CLI Access" icon="terminal">
+    Access Fly commands from your terminal
+  </Card>
+</CardGroup>
+
+---
+
+## Installation
+
+<Tabs>
+  <Tab title="macOS">
+    ### Homebrew (Recommended)
+    
+    ```bash
+    brew install jfrog/tap/fly
+    ```
+    
+    ### Direct Download
+    
+    1. Download the latest `.dmg` from [fly.jfrog.io/download](https://fly.jfrog.io/download)
+    2. Open the downloaded file
+    3. Drag **Fly** to your Applications folder
+    4. Launch Fly from Applications
+    
+    <Note>
+      On first launch, you may need to allow Fly in **System Preferences** → **Security & Privacy**.
+    </Note>
+  </Tab>
+  
+  <Tab title="Windows">
+    ### Winget
+    
+    ```powershell
+    winget install JFrog.Fly
+    ```
+    
+    ### Chocolatey
+    
+    ```powershell
+    choco install jfrog-fly
+    ```
+    
+    ### Direct Download
+    
+    1. Download the latest `.exe` from [fly.jfrog.io/download](https://fly.jfrog.io/download)
+    2. Run the installer
+    3. Follow the installation wizard
+    4. Launch Fly from the Start Menu
+  </Tab>
+  
+  <Tab title="Linux">
+    ### APT (Debian/Ubuntu)
+    
+    ```bash
+    curl -fsSL https://fly.jfrog.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/jfrog-fly.gpg
+    echo "deb [signed-by=/usr/share/keyrings/jfrog-fly.gpg] https://fly.jfrog.io/apt stable main" | sudo tee /etc/apt/sources.list.d/jfrog-fly.list
+    sudo apt update
+    sudo apt install jfrog-fly
+    ```
+    
+    ### YUM/DNF (RHEL/Fedora)
+    
+    ```bash
+    sudo dnf config-manager --add-repo https://fly.jfrog.io/rpm/jfrog-fly.repo
+    sudo dnf install jfrog-fly
+    ```
+    
+    ### Direct Download
+    
+    ```bash
+    curl -fsSL https://fly.jfrog.io/download/linux/latest | sudo tar -xz -C /usr/local/bin
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Initial Configuration
+
+After installation, configure Fly to connect to your registry:
+
+<Steps>
+  <Step title="Launch Fly">
+    Open the Fly Desktop App or run `fly` in your terminal
+  </Step>
+  
+  <Step title="Sign In">
+    Click **Sign In** or run:
+    
+    ```bash
+    fly auth login
+    ```
+    
+    You'll be redirected to your browser to authenticate with your Fly account.
+  </Step>
+  
+  <Step title="Verify Connection">
+    After signing in, verify your connection:
+    
+    ```bash
+    fly auth status
+    ```
+    
+    Expected output:
+    ```
+    ✓ Authenticated as: your-email@example.com
+    ✓ Team: your-team-name
+    ✓ Registry: https://your-team.jfrog.io
+    ```
+  </Step>
+  
+  <Step title="Configure Package Managers">
+    Fly will automatically detect installed package managers. Run:
+    
+    ```bash
+    fly config auto
+    ```
+    
+    This configures npm, pip, Maven, and other detected package managers to use your Fly Registry.
+  </Step>
+</Steps>
+
+---
+
+## Automatic Package Manager Configuration
+
+Fly can automatically configure your local package managers:
+
+<AccordionGroup>
+  <Accordion title="npm / Yarn" icon="npm" defaultOpen>
+    Fly configures your `.npmrc` to use the Fly Registry:
+    
+    ```ini
+    registry=https://your-team.jfrog.io/artifactory/api/npm/npm/
+    //your-team.jfrog.io/artifactory/api/npm/npm/:_authToken=${FLY_NPM_TOKEN}
+    ```
+    
+    Verify with:
+    ```bash
+    npm config get registry
+    ```
+  </Accordion>
+  
+  <Accordion title="pip" icon="python">
+    Fly configures your `pip.conf`:
+    
+    ```ini
+    [global]
+    index-url = https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+    ```
+    
+    Verify with:
+    ```bash
+    pip config get global.index-url
+    ```
+  </Accordion>
+  
+  <Accordion title="Maven" icon="java">
+    Fly configures your `~/.m2/settings.xml`:
+    
+    ```xml
+    <settings>
+      <servers>
+        <server>
+          <id>fly-central</id>
+          <username>${env.FLY_USER}</username>
+          <password>${env.FLY_TOKEN}</password>
+        </server>
+      </servers>
+    </settings>
+    ```
+  </Accordion>
+  
+  <Accordion title="Docker" icon="docker">
+    Fly configures Docker to authenticate with your registry:
+    
+    ```bash
+    fly config docker
+    ```
+    
+    This runs `docker login` with your Fly credentials.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## IDE Integration
+
+### VS Code / Cursor
+
+The Fly Desktop App integrates with VS Code and Cursor through the MCP (Model Context Protocol):
+
+<Steps>
+  <Step title="Enable MCP Server">
+    In Fly Desktop App settings, enable the MCP server
+  </Step>
+  
+  <Step title="Configure IDE">
+    The MCP server allows AI assistants to:
+    - Search artifacts using natural language
+    - Configure CI/CD pipelines
+    - Manage releases directly from the IDE
+  </Step>
+</Steps>
+
+### Available Commands
+
+Once integrated, you can use commands like:
+
+```
+"Configure my project for Fly"
+"Deploy the latest version to staging"
+"What packages changed since last release?"
+"Search for artifacts containing auth"
+```
+
+---
+
+## System Tray Features
+
+The Fly Desktop App runs in your system tray and provides:
+
+<CardGroup cols={2}>
+  <Card title="Quick Access" icon="bolt">
+    Right-click for quick actions like sync, publish, and settings
+  </Card>
+  <Card title="Notifications" icon="bell">
+    Get notified about new releases and team activity
+  </Card>
+  <Card title="Status Indicator" icon="circle-check">
+    See connection status at a glance
+  </Card>
+  <Card title="Auto-Updates" icon="download">
+    Automatic updates to the latest version
+  </Card>
+</CardGroup>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Authentication Failed" icon="lock">
+    **Symptoms:** `fly auth status` shows not authenticated
+    
+    **Solutions:**
+    1. Run `fly auth logout` then `fly auth login`
+    2. Check if your token has expired
+    3. Verify your network connection
+  </Accordion>
+  
+  <Accordion title="Package Manager Not Detected" icon="box-open">
+    **Symptoms:** Package manager not configured automatically
+    
+    **Solutions:**
+    1. Ensure the package manager is installed and in PATH
+    2. Run `fly config detect` to re-scan
+    3. Manually configure using `fly config <package-manager>`
+  </Accordion>
+  
+  <Accordion title="App Won't Start" icon="xmark">
+    **Symptoms:** Desktop app crashes or won't open
+    
+    **Solutions:**
+    1. Check system requirements
+    2. Reinstall the application
+    3. Check logs at `~/.fly/logs/`
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Developer Workflow" icon="code" href="/developer-workflow/overview">
+    Learn how to use Fly in your daily development
+  </Card>
+  <Card title="Package Managers" icon="box" href="/package-managers/overview">
+    Detailed configuration for each package manager
+  </Card>
+</CardGroup>
+

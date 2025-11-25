@@ -1,0 +1,313 @@
+---
+title: "Git Repositories"
+sidebarTitle: "Git Repositories"
+description: "Manage your connected Git repositories and configure artifact publishing"
+icon: "code-branch"
+---
+
+## Overview
+
+The Git Repositories section in Fly Web allows you to manage all your connected source code repositories, view their artifacts, and configure publishing settings.
+
+---
+
+## Repository List
+
+Navigate to **Repositories** in the sidebar to see all connected repositories:
+
+| Column | Description |
+|--------|-------------|
+| **Name** | Repository name with owner |
+| **Provider** | GitHub or GitLab icon |
+| **Status** | Connection status indicator |
+| **Last Activity** | Time of last artifact publish |
+| **Artifacts** | Count of published artifacts |
+
+### Filtering Repositories
+
+Use the filter options to find specific repositories:
+
+- **Search**: Filter by repository name
+- **Provider**: Show only GitHub or GitLab repos
+- **Status**: Connected, Disconnected, or Pending
+- **Has Artifacts**: Show only repos with published artifacts
+
+---
+
+## Connecting Repositories
+
+### Connect New Repository
+
+<Steps>
+  <Step title="Click Connect Repository">
+    From the Repositories page, click **+ Connect Repository**
+  </Step>
+  
+  <Step title="Select Provider">
+    Choose GitHub or GitLab
+  </Step>
+  
+  <Step title="Authorize Access">
+    If not already connected, you'll be redirected to authorize the Fly app
+  </Step>
+  
+  <Step title="Select Repositories">
+    Choose which repositories to connect:
+    - **All repositories** - Connect all current and future repos
+    - **Select repositories** - Choose specific repos
+  </Step>
+  
+  <Step title="Confirm">
+    Click **Connect** to complete the setup
+  </Step>
+</Steps>
+
+### Bulk Connect
+
+Connect multiple repositories at once:
+
+1. Click **Bulk Connect**
+2. Select repositories from the list
+3. Click **Connect Selected**
+
+---
+
+## Repository Details
+
+Click on any repository to view its details:
+
+<Tabs>
+  <Tab title="Overview">
+    ### Repository Overview
+    
+    - **Full name**: Owner/repository-name
+    - **Provider**: GitHub/GitLab
+    - **Default branch**: main/master
+    - **Connected since**: Connection date
+    - **Total artifacts**: Number of published artifacts
+    - **Last publish**: Most recent artifact publish
+  </Tab>
+  
+  <Tab title="Artifacts">
+    ### Published Artifacts
+    
+    View all artifacts published from this repository:
+    
+    | Column | Description |
+    |--------|-------------|
+    | **Name** | Artifact name and type |
+    | **Version** | Published version |
+    | **Commit** | Associated Git commit |
+    | **Date** | Publish timestamp |
+    | **Size** | Artifact size |
+  </Tab>
+  
+  <Tab title="Releases">
+    ### Repository Releases
+    
+    Track releases associated with this repository:
+    
+    - Version tags
+    - Release notes
+    - Associated artifacts
+    - Release date and author
+  </Tab>
+  
+  <Tab title="Settings">
+    ### Repository Settings
+    
+    Configure repository-specific settings:
+    
+    - Publishing permissions
+    - Branch protection rules
+    - Webhook configuration
+    - OIDC trust policy
+  </Tab>
+</Tabs>
+
+---
+
+## Repository Settings
+
+### Publishing Configuration
+
+Configure how artifacts are published from this repository:
+
+```yaml
+# Auto-publish settings
+auto_publish:
+  enabled: true
+  trigger: release  # release, tag, or push
+  branches:
+    - main
+    - release/*
+
+# Package types
+package_types:
+  - npm
+  - docker
+  
+# Version strategy
+versioning:
+  strategy: semver
+  prefix: v
+```
+
+### Branch Protection
+
+Define which branches can publish to which environments:
+
+| Branch Pattern | Environment | Permissions |
+|---------------|-------------|-------------|
+| `main` | Production | Publish, Promote |
+| `release/*` | Staging | Publish |
+| `develop` | Development | Publish |
+| `feature/*` | Development | Publish (snapshots) |
+
+### Webhooks
+
+Fly automatically creates webhooks for connected repositories. View and manage them in the repository settings:
+
+| Event | Description |
+|-------|-------------|
+| `push` | Code pushed to repository |
+| `release` | GitHub/GitLab release created |
+| `tag` | New tag created |
+| `pull_request` | PR merged (optional) |
+
+---
+
+## OIDC Configuration
+
+Configure OIDC (OpenID Connect) trust policies for CI/CD authentication:
+
+### Trust Policy
+
+```json
+{
+  "version": "1.0",
+  "statements": [
+    {
+      "effect": "allow",
+      "principal": {
+        "github": {
+          "repository": "acme-corp/my-app",
+          "ref": "refs/heads/main",
+          "workflow": "release.yml"
+        }
+      },
+      "permissions": ["publish", "promote"]
+    }
+  ]
+}
+```
+
+### Policy Conditions
+
+| Condition | Description |
+|-----------|-------------|
+| `repository` | Repository full name |
+| `ref` | Git ref (branch/tag) |
+| `workflow` | Workflow file name |
+| `environment` | GitHub environment |
+| `actor` | User who triggered workflow |
+
+---
+
+## Syncing Repositories
+
+### Manual Sync
+
+Click the **Sync** button to refresh repository data:
+
+- Fetches latest branches and tags
+- Updates webhook status
+- Refreshes repository metadata
+
+### Auto Sync
+
+Repositories automatically sync when:
+
+- Webhooks are received
+- User visits the repository page
+- Scheduled sync runs (every 6 hours)
+
+---
+
+## Disconnecting Repositories
+
+To disconnect a repository:
+
+<Steps>
+  <Step title="Go to Repository Settings">
+    Navigate to the repository and click **Settings**
+  </Step>
+  
+  <Step title="Click Disconnect">
+    Scroll to the danger zone and click **Disconnect Repository**
+  </Step>
+  
+  <Step title="Confirm">
+    Type the repository name to confirm
+  </Step>
+</Steps>
+
+<Warning>
+  Disconnecting a repository does not delete published artifacts. They will remain in your registry.
+</Warning>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Repository Not Appearing" icon="eye-slash">
+    **Possible causes:**
+    - Repository was created after initial connection
+    - Repository is in a different organization
+    - Insufficient permissions
+    
+    **Solutions:**
+    1. Click **Sync All** to refresh the repository list
+    2. Re-authorize the Fly app with updated permissions
+    3. Check organization settings for third-party app access
+  </Accordion>
+  
+  <Accordion title="Webhooks Not Working" icon="webhook">
+    **Possible causes:**
+    - Webhook was deleted manually
+    - Network/firewall blocking webhook delivery
+    - Webhook secret mismatch
+    
+    **Solutions:**
+    1. Click **Repair Webhooks** in repository settings
+    2. Check webhook delivery logs in GitHub/GitLab
+    3. Verify network allows outbound connections to Fly
+  </Accordion>
+  
+  <Accordion title="Permission Denied" icon="lock">
+    **Possible causes:**
+    - App permissions were revoked
+    - Repository transferred to different org
+    - User lost repository access
+    
+    **Solutions:**
+    1. Re-authorize the Fly app
+    2. Check your permissions in the Git provider
+    3. Contact repository admin
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Artifacts" icon="box" href="/fly-web/artifacts">
+    Browse published artifacts
+  </Card>
+  <Card title="Releases" icon="tag" href="/fly-web/releases">
+    Track releases
+  </Card>
+</CardGroup>
+

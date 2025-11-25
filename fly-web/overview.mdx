@@ -1,0 +1,222 @@
+---
+title: "Fly Web"
+sidebarTitle: "Overview"
+description: "Your central hub for managing Git connections, tracking artifacts, and administering your team"
+icon: "globe"
+---
+
+## Overview
+
+Fly Web is the browser-based interface for managing your JFrog Fly workspace. It provides a unified view of all your artifacts, releases, workflows, and team settings.
+
+<Info>
+  Access Fly Web at [fly.jfrog.io](https://fly.jfrog.io) or your custom subdomain.
+</Info>
+
+---
+
+## Dashboard
+
+The Fly Web dashboard gives you an at-a-glance view of your team's activity:
+
+<Frame>
+  <img src="/images/fly-web-dashboard.png" alt="Fly Web Dashboard" className="rounded-lg" />
+</Frame>
+
+### Dashboard Widgets
+
+<CardGroup cols={2}>
+  <Card title="Recent Activity" icon="clock">
+    Latest publishes, releases, and team actions
+  </Card>
+  <Card title="Artifact Stats" icon="chart-bar">
+    Total artifacts, downloads, and storage usage
+  </Card>
+  <Card title="Active Workflows" icon="gears">
+    Currently running CI/CD workflows
+  </Card>
+  <Card title="Team Activity" icon="users">
+    Recent team member activity and contributions
+  </Card>
+</CardGroup>
+
+---
+
+## Main Sections
+
+<AccordionGroup>
+  <Accordion title="Git Repositories" icon="code-branch" defaultOpen>
+    Manage connected Git repositories, view their artifacts, and configure publishing settings.
+    
+    <Card title="Learn more" icon="arrow-right" href="/fly-web/git-repositories" />
+  </Accordion>
+  
+  <Accordion title="Artifacts" icon="box">
+    Browse all artifacts in your registry, search by name or content, and view detailed metadata.
+    
+    <Card title="Learn more" icon="arrow-right" href="/fly-web/artifacts" />
+  </Accordion>
+  
+  <Accordion title="Releases" icon="tag">
+    Track releases across all repositories, view release notes, and compare versions.
+    
+    <Card title="Learn more" icon="arrow-right" href="/fly-web/releases" />
+  </Accordion>
+  
+  <Accordion title="Workflows" icon="gears">
+    Monitor CI/CD workflows, view logs, and troubleshoot build issues.
+    
+    <Card title="Learn more" icon="arrow-right" href="/fly-web/workflows" />
+  </Accordion>
+  
+  <Accordion title="Users & Access" icon="user-shield">
+    Manage team members, roles, and access tokens.
+    
+    <Card title="Learn more" icon="arrow-right" href="/fly-web/users-access" />
+  </Accordion>
+  
+  <Accordion title="Fly Chat" icon="message-bot">
+    AI-powered chat interface for natural language queries about your artifacts and releases.
+    
+    <Card title="Learn more" icon="arrow-right" href="/fly-web/fly-chat" />
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Navigation
+
+### Top Navigation Bar
+
+| Element | Description |
+|---------|-------------|
+| **Search** | Global search across all artifacts and releases |
+| **Notifications** | Bell icon for alerts and updates |
+| **Help** | Access documentation and support |
+| **Profile** | Account settings and logout |
+
+### Sidebar Navigation
+
+The left sidebar provides quick access to:
+
+- 📊 **Dashboard** - Overview and stats
+- 📦 **Artifacts** - Browse all artifacts
+- 🏷️ **Releases** - View releases
+- 📁 **Repositories** - Connected Git repos
+- ⚙️ **Workflows** - CI/CD monitoring
+- 💬 **Fly Chat** - AI assistant
+- ⚙️ **Settings** - Team and account settings
+
+---
+
+## Quick Actions
+
+### From the Dashboard
+
+<Steps>
+  <Step title="Connect Repository">
+    Click **+ Connect Repository** to add a new Git repository
+  </Step>
+  
+  <Step title="Create Release">
+    Click **Create Release** to manually create a new release
+  </Step>
+  
+  <Step title="Invite Team Member">
+    Click **Invite** in the team section to add collaborators
+  </Step>
+</Steps>
+
+### Command Palette
+
+Press `Cmd/Ctrl + K` to open the command palette for quick navigation:
+
+```
+Search artifacts...
+Go to Releases
+Open Settings
+Connect Repository
+Create Access Token
+```
+
+---
+
+## Search
+
+### Global Search
+
+The search bar supports:
+
+- **Artifact names**: `@myteam/utils`
+- **Version numbers**: `2.1.0`
+- **Authors**: `@developer`
+- **Commit hashes**: `abc123`
+- **Natural language**: `authentication library from last week`
+
+### Search Filters
+
+Refine searches with filters:
+
+```
+type:npm @myteam/utils
+type:docker created:>2024-01-01
+author:john@example.com
+tag:production
+```
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + K` | Open command palette |
+| `Cmd/Ctrl + /` | Focus search |
+| `G then D` | Go to Dashboard |
+| `G then A` | Go to Artifacts |
+| `G then R` | Go to Releases |
+| `G then S` | Go to Settings |
+| `?` | Show keyboard shortcuts |
+
+---
+
+## Mobile Access
+
+Fly Web is responsive and works on mobile devices:
+
+- View artifacts and releases
+- Check workflow status
+- Receive and manage notifications
+- Basic team management
+
+<Note>
+  For the best experience with complex operations like repository configuration, use a desktop browser.
+</Note>
+
+---
+
+## Browser Support
+
+Fly Web supports the latest versions of:
+
+- Chrome / Chromium
+- Firefox
+- Safari
+- Edge
+
+---
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Git Repositories" icon="code-branch" href="/fly-web/git-repositories">
+    Manage repositories
+  </Card>
+  <Card title="Artifacts" icon="box" href="/fly-web/artifacts">
+    Browse artifacts
+  </Card>
+  <Card title="Releases" icon="tag" href="/fly-web/releases">
+    Track releases
+  </Card>
+</CardGroup>
+

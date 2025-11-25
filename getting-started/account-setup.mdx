@@ -1,0 +1,147 @@
+---
+title: "Account & Team Setup"
+sidebarTitle: "Account Setup"
+description: "Create your JFrog Fly account and configure your team workspace"
+icon: "user-plus"
+---
+
+## Create Your Account
+
+Setting up your JFrog Fly account is the first step to unified artifact management.
+
+<Steps>
+  <Step title="Sign Up">
+    Navigate to [fly.jfrog.io](https://fly.jfrog.io) and click **Get Started**.
+    
+    You can sign up using:
+    - **GitHub** - Recommended for seamless repository integration
+    - **GitLab** - For GitLab-centric workflows
+    - **Email** - Traditional email and password registration
+  </Step>
+  
+  <Step title="Choose Your Subdomain">
+    Select a unique subdomain for your Fly Registry:
+    
+    ```
+    <your-team-name>.jfrog.io
+    ```
+    
+    <Warning>
+      Your subdomain cannot be changed after creation. Choose carefully!
+    </Warning>
+  </Step>
+  
+  <Step title="Verify Your Email">
+    If you signed up with email, check your inbox for a verification link and click to activate your account.
+  </Step>
+</Steps>
+
+---
+
+## Team Configuration
+
+### Create Your Team
+
+After account creation, you'll be prompted to set up your team workspace:
+
+<AccordionGroup>
+  <Accordion title="Team Name" icon="users" defaultOpen>
+    Choose a descriptive name for your team or organization. This will be visible to all team members.
+  </Accordion>
+  
+  <Accordion title="Team Settings" icon="gear">
+    Configure default settings for your team:
+    - **Default visibility** for new repositories
+    - **Retention policies** for artifacts
+    - **Security settings** and access controls
+  </Accordion>
+</AccordionGroup>
+
+### Invite Team Members
+
+Grow your team by inviting collaborators:
+
+<Tabs>
+  <Tab title="Email Invitation">
+    1. Go to **Settings** → **Team Members**
+    2. Click **Invite Member**
+    3. Enter their email address
+    4. Select their role:
+       - **Admin** - Full access to all features
+       - **Developer** - Can publish and manage artifacts
+       - **Viewer** - Read-only access
+    5. Click **Send Invitation**
+  </Tab>
+  
+  <Tab title="Link Sharing">
+    1. Go to **Settings** → **Team Members**
+    2. Click **Generate Invite Link**
+    3. Set link expiration (optional)
+    4. Share the link with your team
+    
+    <Note>
+      Users joining via link will have the default "Developer" role. Admins can adjust roles after they join.
+    </Note>
+  </Tab>
+</Tabs>
+
+---
+
+## Your Fly Registry URL
+
+Once your account is set up, your registry URL will be:
+
+<CodeGroup>
+```bash Registry URL
+https://<your-subdomain>.jfrog.io
+```
+
+```bash Example
+https://acme-corp.jfrog.io
+```
+</CodeGroup>
+
+This URL is used for:
+- Pushing and pulling artifacts
+- Configuring package managers
+- API access and integrations
+
+---
+
+## Account Security
+
+<CardGroup cols={2}>
+  <Card title="Two-Factor Authentication" icon="shield-halved">
+    Enable 2FA in **Settings** → **Security** for additional account protection.
+  </Card>
+  <Card title="Access Tokens" icon="key">
+    Generate access tokens in **Settings** → **Tokens** for CLI and CI/CD access.
+  </Card>
+</CardGroup>
+
+### Creating Access Tokens
+
+Access tokens are required for programmatic access to your Fly Registry:
+
+```bash
+# Token format
+fly_<token_id>_<token_secret>
+```
+
+<Warning>
+  Store your access tokens securely. They cannot be retrieved after creation - only regenerated.
+</Warning>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Connect Git Repositories" icon="code-branch" href="/getting-started/git-connection">
+    Link your source code repositories
+  </Card>
+  <Card title="Install Desktop App" icon="desktop" href="/getting-started/desktop-app">
+    Set up your local development environment
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,355 @@
+---
+title: "FAQ"
+sidebarTitle: "FAQ"
+description: "Frequently asked questions about JFrog Fly"
+icon: "circle-question"
+---
+
+## General
+
+<AccordionGroup>
+  <Accordion title="What is JFrog Fly?" defaultOpen>
+    JFrog Fly is an agentic package management platform that enables you to manage, share, and release artifacts directly from your favorite coding agent (IDE and CLI). It makes release management a seamless part of your coding workflow.
+  </Accordion>
+  
+  <Accordion title="How is Fly different from JFrog Artifactory?">
+    JFrog Fly is designed specifically for modern development workflows with:
+    - **Agentic integration** - Works directly with AI coding assistants
+    - **Zero-friction setup** - Automatic package manager configuration
+    - **Semantic search** - Find artifacts using natural language
+    - **Git-native traceability** - Every artifact linked to its source
+    
+    While Artifactory is a comprehensive artifact management solution for enterprises, Fly focuses on developer experience and AI-assisted workflows.
+  </Accordion>
+  
+  <Accordion title="What package managers does Fly support?">
+    Fly supports all major package managers:
+    - **Containers**: Docker, Podman, OCI
+    - **JavaScript/TypeScript**: npm, Yarn, pnpm
+    - **Python**: pip, Twine, Pipenv, Poetry
+    - **Java**: Maven, Gradle
+    - **Go**: Go modules
+    - **.NET**: NuGet, dotnet CLI
+    - **Helm**: Kubernetes package manager
+  </Accordion>
+  
+  <Accordion title="Is Fly free to use?">
+    Fly offers a free tier for individual developers and small teams. For larger teams and enterprise features, please visit [fly.jfrog.io](https://fly.jfrog.io) for pricing information.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Getting Started
+
+<AccordionGroup>
+  <Accordion title="How do I sign up for Fly?">
+    1. Visit [fly.jfrog.io](https://fly.jfrog.io)
+    2. Click **Get Started**
+    3. Sign up with GitHub, GitLab, or email
+    4. Choose your team subdomain
+    5. Start using Fly!
+    
+    See our [Getting Started guide](/getting-started/overview) for detailed instructions.
+  </Accordion>
+  
+  <Accordion title="How do I install the Desktop App?">
+    **macOS (Homebrew)**:
+    ```bash
+    brew install jfrog/tap/fly
+    ```
+    
+    **Windows (Winget)**:
+    ```powershell
+    winget install JFrog.Fly
+    ```
+    
+    **Linux (APT)**:
+    ```bash
+    curl -fsSL https://fly.jfrog.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/jfrog-fly.gpg
+    echo "deb [signed-by=/usr/share/keyrings/jfrog-fly.gpg] https://fly.jfrog.io/apt stable main" | sudo tee /etc/apt/sources.list.d/jfrog-fly.list
+    sudo apt update && sudo apt install jfrog-fly
+    ```
+    
+    See [Desktop App Installation](/getting-started/desktop-app) for more details.
+  </Accordion>
+  
+  <Accordion title="How do I configure my package managers?">
+    The easiest way is to use the Fly Desktop App:
+    
+    ```bash
+    fly config auto
+    ```
+    
+    This automatically detects and configures all installed package managers. For manual configuration, see our [Package Managers](/package-managers/overview) guide.
+  </Accordion>
+  
+  <Accordion title="What's my registry URL?">
+    Your registry URL is based on your team subdomain:
+    
+    ```
+    https://<your-subdomain>.jfrog.io
+    ```
+    
+    You can find your exact URL in Fly Web under **Settings** or by running:
+    
+    ```bash
+    fly auth status
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Authentication
+
+<AccordionGroup>
+  <Accordion title="How do I create an access token?">
+    **Via Fly Web:**
+    1. Go to **Settings** → **Access Tokens**
+    2. Click **Create Token**
+    3. Set name, expiration, and scopes
+    4. Copy and save the token securely
+    
+    **Via CLI:**
+    ```bash
+    fly auth token create --name "My Token" --expiry 90d
+    ```
+  </Accordion>
+  
+  <Accordion title="How does OIDC authentication work?">
+    OIDC (OpenID Connect) allows CI/CD pipelines to authenticate without stored secrets:
+    
+    1. Configure trust policy in Fly Web
+    2. Add `id-token: write` permission in your workflow
+    3. Use the Fly GitHub Action
+    
+    ```yaml
+    - uses: jfrog/fly-action@v1
+      with:
+        fly-url: ${{ vars.FLY_URL }}
+    ```
+    
+    Fly validates the OIDC token from your CI provider and grants temporary access.
+  </Accordion>
+  
+  <Accordion title="My token expired. What do I do?">
+    Generate a new token:
+    
+    ```bash
+    fly auth token create --name "New Token" --expiry 90d
+    ```
+    
+    Then update your configuration:
+    
+    ```bash
+    fly config auto
+    ```
+  </Accordion>
+  
+  <Accordion title="How do I enable SSO for my team?">
+    1. Go to **Settings** → **Security** → **SSO**
+    2. Select your identity provider (Google, Okta, Azure AD)
+    3. Configure the connection details
+    4. Test and enable SSO
+    
+    Contact [fly-support@jfrog.com](mailto:fly-support@jfrog.com) for enterprise SSO setup.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Publishing & Artifacts
+
+<AccordionGroup>
+  <Accordion title="How do I publish a package?">
+    **Using Fly CLI:**
+    ```bash
+    fly publish
+    ```
+    
+    **Using native package manager:**
+    ```bash
+    npm publish        # npm
+    twine upload dist/* # Python
+    docker push ...    # Docker
+    ```
+    
+    Fly automatically links published artifacts to your Git commit.
+  </Accordion>
+  
+  <Accordion title="Can I publish different package types from the same project?">
+    Yes! Fly supports publishing multiple artifact types from a single project. For example, you can publish both an npm package and a Docker image from the same repository.
+  </Accordion>
+  
+  <Accordion title="How do I delete a published artifact?">
+    **Via Fly Web:**
+    1. Navigate to the artifact
+    2. Click **Actions** → **Delete**
+    3. Confirm deletion
+    
+    **Via CLI:**
+    ```bash
+    fly unpublish @myteam/package@1.0.0
+    ```
+    
+    <Warning>
+      Deleting artifacts may break dependent packages.
+    </Warning>
+  </Accordion>
+  
+  <Accordion title="Why does my artifact show 'No Git info'?">
+    This happens when Fly can't link the artifact to a Git commit. Ensure:
+    
+    1. You're publishing from within a Git repository
+    2. The repository is connected in Fly Web
+    3. You have committed your changes before publishing
+    
+    Use `fly publish --git-tag` to automatically create a Git tag.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## CI/CD
+
+<AccordionGroup>
+  <Accordion title="How do I set up GitHub Actions with Fly?">
+    ```yaml
+    - uses: jfrog/fly-action@v1
+      with:
+        fly-url: ${{ vars.FLY_URL }}
+    
+    - run: npm ci
+    - run: npm publish
+    ```
+    
+    See [Automated Workflows](/developer-workflow/automated-workflows) for complete examples.
+  </Accordion>
+  
+  <Accordion title="How do I set up GitLab CI with Fly?">
+    ```yaml
+    before_script:
+      - curl -fsSL https://fly.jfrog.io/install.sh | bash
+      - fly auth login --token $FLY_TOKEN
+      - fly config auto
+    
+    script:
+      - npm ci
+      - npm publish
+    ```
+  </Accordion>
+  
+  <Accordion title="My CI build is slow. How can I speed it up?">
+    1. **Use Fly's caching**: Fly caches packages from remote registries
+    2. **Configure dependency caching**: Use your CI's cache mechanism
+    3. **Use smaller base images**: For Docker builds
+    4. **Parallel jobs**: Split large builds into parallel jobs
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Desktop App
+
+<AccordionGroup>
+  <Accordion title="The Desktop App won't start. What do I do?">
+    1. Check system requirements
+    2. Reinstall the application
+    3. Check logs at `~/.fly/logs/`
+    4. Try running from terminal: `fly status`
+    
+    If issues persist, contact [fly-support@jfrog.com](mailto:fly-support@jfrog.com).
+  </Accordion>
+  
+  <Accordion title="How do I use Fly in VS Code/Cursor?">
+    The Fly Desktop App integrates through MCP (Model Context Protocol):
+    
+    1. Enable MCP server in Fly Desktop App settings
+    2. Use natural language in your AI assistant:
+       - "Configure my project for Fly"
+       - "Search for authentication packages"
+       - "Deploy version 2.0.0 to staging"
+  </Accordion>
+  
+  <Accordion title="How do I work offline?">
+    Enable offline mode to work without network:
+    
+    ```bash
+    fly offline enable
+    ```
+    
+    This uses locally cached packages. To disable:
+    
+    ```bash
+    fly offline disable
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Security
+
+<AccordionGroup>
+  <Accordion title="How secure is my data in Fly?">
+    JFrog Fly implements enterprise-grade security:
+    - All data encrypted in transit (TLS 1.3)
+    - Data encrypted at rest
+    - SOC 2 Type II certified
+    - Regular security audits
+    - GDPR compliant
+  </Accordion>
+  
+  <Accordion title="Can I restrict who can publish packages?">
+    Yes! Configure permissions in **Settings** → **Users & Access**:
+    
+    - **Admin**: Full access
+    - **Developer**: Can publish and consume
+    - **Viewer**: Read-only access
+    
+    You can also set repository-level permissions for fine-grained control.
+  </Accordion>
+  
+  <Accordion title="Does Fly scan packages for vulnerabilities?">
+    Fly integrates with JFrog Xray for security scanning. Contact your account manager for information about enabling security scanning features.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Billing & Limits
+
+<AccordionGroup>
+  <Accordion title="What are the storage limits?">
+    Storage limits depend on your plan:
+    - **Free**: 2 GB
+    - **Team**: 100 GB
+    - **Enterprise**: Unlimited
+    
+    Contact [fly-support@jfrog.com](mailto:fly-support@jfrog.com) for current pricing.
+  </Accordion>
+  
+  <Accordion title="Are there rate limits?">
+    Rate limits are generous and designed to not impact normal usage:
+    - API calls: 1000/minute
+    - Downloads: Unlimited
+    - Uploads: Based on plan
+    
+    If you're hitting limits, contact support for increases.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Need More Help?
+
+<CardGroup cols={2}>
+  <Card title="Contact Support" icon="envelope" href="mailto:fly-support@jfrog.com">
+    Email our support team
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/resources/troubleshooting">
+    Common issues and solutions
+  </Card>
+</CardGroup>
+

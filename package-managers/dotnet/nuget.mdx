@@ -1,0 +1,192 @@
+---
+title: "NuGet"
+sidebarTitle: "NuGet"
+description: "Configure NuGet to use your Fly Registry for .NET packages"
+icon: "microsoft"
+---
+
+## Overview
+
+JFrog Fly provides a NuGet feed for storing and managing .NET packages.
+
+---
+
+## Quick Setup
+
+```bash
+# Using Fly Desktop App
+fly config nuget
+```
+
+---
+
+## Manual Configuration
+
+### Add Source
+
+```bash
+nuget sources add \
+    -Name "Fly" \
+    -Source "https://your-team.jfrog.io/artifactory/api/nuget/nuget/v3/index.json" \
+    -Username your-email@example.com \
+    -Password fly_abc123...
+```
+
+### NuGet.config
+
+Create or edit `NuGet.config`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+        <add key="Fly" value="https://your-team.jfrog.io/artifactory/api/nuget/nuget/v3/index.json" />
+        <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    </packageSources>
+    <packageSourceCredentials>
+        <Fly>
+            <add key="Username" value="your-email@example.com" />
+            <add key="ClearTextPassword" value="fly_abc123..." />
+        </Fly>
+    </packageSourceCredentials>
+</configuration>
+```
+
+---
+
+## Installing Packages
+
+```bash
+# Install from Fly
+nuget install MyPackage -Source Fly
+
+# Install specific version
+nuget install MyPackage -Version 1.0.0 -Source Fly
+```
+
+### Using dotnet CLI
+
+```bash
+dotnet add package MyPackage --source Fly
+```
+
+---
+
+## Publishing Packages
+
+### Create Package
+
+```bash
+# Create .nupkg
+dotnet pack -c Release
+```
+
+### Publish
+
+```bash
+# Publish to Fly
+dotnet nuget push bin/Release/MyPackage.1.0.0.nupkg \
+    --source Fly \
+    --api-key fly_abc123...
+```
+
+---
+
+## Project Configuration
+
+### .csproj
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <PackageId>MyCompany.MyPackage</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Developer</Authors>
+        <Description>My .NET package</Description>
+    </PropertyGroup>
+</Project>
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: .NET Build
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Configure NuGet
+        run: |
+          dotnet nuget add source \
+            "https://${{ vars.FLY_HOST }}/artifactory/api/nuget/nuget/v3/index.json" \
+            --name Fly \
+            --username ${{ secrets.FLY_USER }} \
+            --password ${{ secrets.FLY_TOKEN }} \
+            --store-password-in-clear-text
+      
+      - name: Build
+        run: dotnet build -c Release
+      
+      - name: Pack
+        run: dotnet pack -c Release
+      
+      - name: Publish
+        if: github.event_name == 'release'
+        run: |
+          dotnet nuget push **/*.nupkg \
+            --source Fly \
+            --api-key ${{ secrets.FLY_TOKEN }}
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized" icon="lock">
+    **Solutions:**
+    1. Verify credentials in NuGet.config
+    2. Check API key is correct
+    3. Verify source URL
+  </Accordion>
+  
+  <Accordion title="Package Not Found" icon="magnifying-glass">
+    **Solutions:**
+    1. Check package exists in Fly
+    2. Verify source name matches
+    3. Try `nuget locals all -clear`
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="dotnet CLI" icon="terminal" href="/package-managers/dotnet/dotnet-cli">
+    dotnet CLI configuration
+  </Card>
+  <Card title="Package Managers" icon="box" href="/package-managers/overview">
+    All package managers
+  </Card>
+</CardGroup>
+

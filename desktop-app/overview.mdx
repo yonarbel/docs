@@ -1,0 +1,192 @@
+---
+title: "Fly Desktop App"
+sidebarTitle: "Overview"
+description: "Your local agent for managing packages, enabling agentic workflows, and connecting to your Fly Registry"
+icon: "desktop"
+---
+
+## Overview
+
+The Fly Desktop App is your local companion that bridges your development environment with JFrog Fly. It runs in the background, managing package manager configurations, providing CLI access, and enabling AI-powered workflows in your IDE.
+
+<Frame>
+  <img src="/images/desktop-app-overview.png" alt="Fly Desktop App Overview" className="rounded-lg" />
+</Frame>
+
+---
+
+## Key Capabilities
+
+<CardGroup cols={2}>
+  <Card title="Package Manager Integration" icon="box">
+    Automatically configures npm, pip, Maven, Docker, and more to use your Fly Registry
+  </Card>
+  <Card title="CLI Access" icon="terminal">
+    Full-featured command-line interface for all Fly operations
+  </Card>
+  <Card title="IDE Integration" icon="laptop-code">
+    MCP server for AI-assisted development in VS Code, Cursor, and other IDEs
+  </Card>
+  <Card title="Background Sync" icon="rotate">
+    Keeps your local environment synchronized with your team's registry
+  </Card>
+</CardGroup>
+
+---
+
+## System Tray
+
+The Desktop App lives in your system tray for quick access:
+
+<Steps>
+  <Step title="Status Indicator">
+    - 🟢 **Green**: Connected and synced
+    - 🟡 **Yellow**: Syncing or minor issue
+    - 🔴 **Red**: Disconnected or error
+  </Step>
+  
+  <Step title="Quick Actions">
+    Right-click the tray icon for:
+    - **Sync Now** - Force a registry sync
+    - **Publish** - Open publish dialog
+    - **Search** - Quick artifact search
+    - **Settings** - App configuration
+    - **Quit** - Exit the application
+  </Step>
+  
+  <Step title="Notifications">
+    Receive notifications for:
+    - New releases from your team
+    - Successful publishes
+    - Sync errors or warnings
+  </Step>
+</Steps>
+
+---
+
+## Quick Actions
+
+### From System Tray
+
+| Action | Description |
+|--------|-------------|
+| **Sync** | Refresh package manager configurations |
+| **Publish** | Publish current project's artifacts |
+| **Search** | Find artifacts in your registry |
+| **Logs** | View application logs |
+| **Settings** | Open configuration panel |
+
+### From CLI
+
+```bash
+# Check status
+fly status
+
+# Sync configurations
+fly sync
+
+# Quick publish
+fly publish
+
+# Search artifacts
+fly search "auth"
+```
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Your Development Environment              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │    IDE       │  │   Terminal   │  │ Package Mgrs │       │
+│  │ (VS Code,    │  │   (fly CLI)  │  │ (npm, pip,   │       │
+│  │  Cursor)     │  │              │  │  maven, etc) │       │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘       │
+│         │                 │                 │                │
+│         │    MCP Server   │    CLI          │  Proxy         │
+│         ▼                 ▼                 ▼                │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │               Fly Desktop App                         │   │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐     │   │
+│  │  │  Auth   │ │  Cache  │ │  Sync   │ │  Config │     │   │
+│  │  │ Manager │ │ Manager │ │ Service │ │ Manager │     │   │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘     │   │
+│  └──────────────────────────┬───────────────────────────┘   │
+│                             │                                │
+└─────────────────────────────┼────────────────────────────────┘
+                              │
+                              │  HTTPS
+                              ▼
+                    ┌──────────────────┐
+                    │   Fly Registry   │
+                    │  (jfrog.io)      │
+                    └──────────────────┘
+```
+
+---
+
+## Version Information
+
+Check your Desktop App version:
+
+```bash
+fly version
+
+# Output:
+# Fly Desktop App v1.5.0
+# CLI: v1.5.0
+# MCP Server: v1.2.0
+# OS: darwin arm64
+```
+
+### Auto Updates
+
+The Desktop App automatically checks for updates. Configure update behavior in Settings:
+
+- **Automatic** - Install updates automatically (recommended)
+- **Notify** - Notify when updates are available
+- **Manual** - Check for updates manually
+
+---
+
+## Resource Usage
+
+The Desktop App is designed to be lightweight:
+
+| Resource | Typical Usage |
+|----------|---------------|
+| Memory | 50-100 MB |
+| CPU | Less than 1% idle |
+| Network | Minimal (only during sync) |
+| Disk | 100 MB + cache |
+
+### Reducing Resource Usage
+
+```bash
+# Reduce sync frequency
+fly config set sync.interval 3600  # Every hour
+
+# Limit cache size
+fly config set cache.max_size 1GB
+
+# Disable notifications
+fly config set notifications.enabled false
+```
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/desktop-app/configuration">
+    Detailed configuration options
+  </Card>
+  <Card title="Commands" icon="terminal" href="/desktop-app/commands">
+    CLI command reference
+  </Card>
+</CardGroup>
+

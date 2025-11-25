@@ -1,0 +1,315 @@
+---
+title: "Maven"
+sidebarTitle: "Maven"
+description: "Configure Maven to use your Fly Registry for Java dependencies"
+icon: "java"
+---
+
+## Overview
+
+JFrog Fly provides a Maven repository for storing and managing Java artifacts. Configure Maven to resolve dependencies from and publish artifacts to your Fly Registry.
+
+---
+
+## Quick Setup
+
+```bash
+# Using Fly Desktop App
+fly config maven
+```
+
+This automatically configures your `~/.m2/settings.xml`.
+
+---
+
+## Manual Configuration
+
+### settings.xml
+
+Create or edit `~/.m2/settings.xml`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 
+          http://maven.apache.org/xsd/settings-1.2.0.xsd">
+    
+    <servers>
+        <server>
+            <id>fly-central</id>
+            <username>${env.FLY_USER}</username>
+            <password>${env.FLY_TOKEN}</password>
+        </server>
+        <server>
+            <id>fly-snapshots</id>
+            <username>${env.FLY_USER}</username>
+            <password>${env.FLY_TOKEN}</password>
+        </server>
+    </servers>
+    
+    <mirrors>
+        <mirror>
+            <id>fly-central</id>
+            <mirrorOf>central</mirrorOf>
+            <url>https://your-team.jfrog.io/artifactory/maven-remote</url>
+        </mirror>
+    </mirrors>
+    
+    <profiles>
+        <profile>
+            <id>fly</id>
+            <repositories>
+                <repository>
+                    <id>fly-central</id>
+                    <url>https://your-team.jfrog.io/artifactory/maven-remote</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>fly-snapshots</id>
+                    <url>https://your-team.jfrog.io/artifactory/maven-snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+    
+    <activeProfiles>
+        <activeProfile>fly</activeProfile>
+    </activeProfiles>
+</settings>
+```
+
+---
+
+## pom.xml Configuration
+
+### Distribution Management
+
+Configure where to publish artifacts:
+
+```xml
+<project>
+    <groupId>com.myteam</groupId>
+    <artifactId>my-library</artifactId>
+    <version>1.0.0</version>
+    
+    <distributionManagement>
+        <repository>
+            <id>fly-central</id>
+            <url>https://your-team.jfrog.io/artifactory/maven-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>fly-snapshots</id>
+            <url>https://your-team.jfrog.io/artifactory/maven-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+</project>
+```
+
+### Repository Configuration
+
+Add Fly as a repository source:
+
+```xml
+<repositories>
+    <repository>
+        <id>fly-central</id>
+        <url>https://your-team.jfrog.io/artifactory/maven-remote</url>
+    </repository>
+</repositories>
+```
+
+---
+
+## Building and Publishing
+
+### Build
+
+```bash
+# Build project
+mvn clean package
+
+# Build with tests
+mvn clean verify
+
+# Build without tests
+mvn clean package -DskipTests
+```
+
+### Publish
+
+```bash
+# Deploy to Fly
+mvn deploy
+
+# Deploy specific artifact
+mvn deploy:deploy-file \
+    -DgroupId=com.myteam \
+    -DartifactId=my-library \
+    -Dversion=1.0.0 \
+    -Dpackaging=jar \
+    -Dfile=target/my-library-1.0.0.jar \
+    -DrepositoryId=fly-central \
+    -Durl=https://your-team.jfrog.io/artifactory/maven-releases
+```
+
+---
+
+## Multi-Module Projects
+
+### Parent POM
+
+```xml
+<project>
+    <groupId>com.myteam</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    
+    <modules>
+        <module>core</module>
+        <module>api</module>
+        <module>service</module>
+    </modules>
+    
+    <distributionManagement>
+        <repository>
+            <id>fly-central</id>
+            <url>https://your-team.jfrog.io/artifactory/maven-releases</url>
+        </repository>
+    </distributionManagement>
+</project>
+```
+
+### Deploy All Modules
+
+```bash
+mvn deploy -DskipTests
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Maven Build
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Configure Maven
+        run: |
+          mkdir -p ~/.m2
+          cat << EOF > ~/.m2/settings.xml
+          <settings>
+            <servers>
+              <server>
+                <id>fly-central</id>
+                <username>${{ secrets.FLY_USER }}</username>
+                <password>${{ secrets.FLY_TOKEN }}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+      
+      - name: Build
+        run: mvn clean verify
+      
+      - name: Deploy
+        if: github.event_name == 'release'
+        run: mvn deploy -DskipTests
+```
+
+### GitLab CI
+
+```yaml
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - mvn clean verify -s ci-settings.xml
+  artifacts:
+    paths:
+      - target/*.jar
+
+deploy:
+  stage: deploy
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - mvn deploy -DskipTests -s ci-settings.xml
+  only:
+    - tags
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized" icon="lock">
+    **Solutions:**
+    1. Verify server ID in settings.xml matches pom.xml
+    2. Check credentials are correct
+    3. Ensure environment variables are set
+  </Accordion>
+  
+  <Accordion title="Dependency Not Found" icon="magnifying-glass">
+    **Solutions:**
+    1. Check artifact exists in Fly
+    2. Verify repository URL is correct
+    3. Run `mvn dependency:purge-local-repository` and retry
+  </Accordion>
+  
+  <Accordion title="Deploy Failed" icon="upload">
+    **Solutions:**
+    1. Check distributionManagement configuration
+    2. Verify publish permissions
+    3. Ensure version doesn't already exist (for releases)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Gradle" icon="java" href="/package-managers/java/gradle">
+    Gradle configuration
+  </Card>
+  <Card title="Package Managers" icon="box" href="/package-managers/overview">
+    All package managers
+  </Card>
+</CardGroup>
+

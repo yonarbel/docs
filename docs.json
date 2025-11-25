@@ -1,55 +1,149 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "theme": "maple",
+  "name": "JFrog Fly Documentation",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#40BE46",
+    "light": "#5CDB61",
+    "dark": "#1A472A"
   },
   "favicon": "/favicon.svg",
+  "background": {
+    "style": "gradient"
+  },
+  "font": {
+    "headings": {
+      "family": "Inter",
+      "weight": 700
+    },
+    "body": {
+      "family": "Inter",
+      "weight": 400
+    }
+  },
+  "modeToggle": {
+    "default": "dark",
+    "isHidden": false
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Overview",
             "pages": [
-              "introduction",
-              "quickstart",
-              "development"
+              "introduction"
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Getting Started",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              "getting-started/overview",
+              "getting-started/account-setup",
+              "getting-started/git-connection",
+              "getting-started/desktop-app"
+            ]
+          },
+          {
+            "group": "Developer Workflow",
+            "pages": [
+              "developer-workflow/overview",
+              "developer-workflow/local-artifact-management",
+              "developer-workflow/automated-workflows",
+              "developer-workflow/runtime-deployment"
+            ]
+          },
+          {
+            "group": "Fly Desktop App",
+            "pages": [
+              "desktop-app/overview",
+              "desktop-app/configuration",
+              "desktop-app/commands"
+            ]
+          },
+          {
+            "group": "Fly Web",
+            "pages": [
+              "fly-web/overview",
+              "fly-web/git-repositories",
+              "fly-web/artifacts",
+              "fly-web/releases",
+              "fly-web/workflows",
+              "fly-web/users-access",
+              "fly-web/fly-chat"
             ]
           }
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Package Managers",
         "groups": [
           {
-            "group": "API Documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "package-managers/overview"
             ]
           },
           {
-            "group": "Endpoint Examples",
+            "group": "Containers",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "package-managers/containers/docker",
+              "package-managers/containers/podman"
+            ]
+          },
+          {
+            "group": "JavaScript & TypeScript",
+            "pages": [
+              "package-managers/javascript/npm"
+            ]
+          },
+          {
+            "group": "Python",
+            "pages": [
+              "package-managers/python/pip",
+              "package-managers/python/twine",
+              "package-managers/python/pipenv"
+            ]
+          },
+          {
+            "group": "Go",
+            "pages": [
+              "package-managers/go/overview"
+            ]
+          },
+          {
+            "group": "Java",
+            "pages": [
+              "package-managers/java/maven",
+              "package-managers/java/gradle"
+            ]
+          },
+          {
+            "group": ".NET",
+            "pages": [
+              "package-managers/dotnet/nuget",
+              "package-managers/dotnet/dotnet-cli"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Resources",
+        "groups": [
+          {
+            "group": "Help",
+            "pages": [
+              "resources/faq",
+              "resources/troubleshooting",
+              "resources/glossary"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "resources/cli-reference",
+              "resources/api-reference"
             ]
           }
         ]
@@ -58,19 +152,19 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Fly Web",
+          "href": "https://fly.jfrog.io",
+          "icon": "rocket"
         },
         {
           "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
+          "href": "https://github.com/jfrog",
+          "icon": "github"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Support",
+          "href": "mailto:fly-support@jfrog.com",
+          "icon": "envelope"
         }
       ]
     }
@@ -83,20 +177,50 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:fly-support@jfrog.com"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Get Started",
+      "href": "https://fly.jfrog.io"
     }
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+      "x": "https://x.com/jfrog",
+      "github": "https://github.com/jfrog",
+      "linkedin": "https://linkedin.com/company/jfrog"
+    },
+    "links": [
+      {
+        "title": "Company",
+        "items": [
+          {
+            "label": "JFrog.com",
+            "href": "https://jfrog.com"
+          },
+          {
+            "label": "Terms of Use",
+            "href": "https://jfrog.com/terms-of-use/"
+          },
+          {
+            "label": "Privacy Notice",
+            "href": "https://jfrog.com/privacy-notice/"
+          }
+        ]
+      }
+    ]
+  },
+  "seo": {
+    "indexHiddenPages": false
+  },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true,
+    "raiseIssue": true
+  },
+  "search": {
+    "prompt": "Search Fly documentation..."
   }
 }

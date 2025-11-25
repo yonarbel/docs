@@ -1,0 +1,349 @@
+---
+title: "Workflows"
+sidebarTitle: "Workflows"
+description: "Monitor and manage CI/CD workflows that interact with your Fly Registry"
+icon: "gears"
+---
+
+## Overview
+
+The Workflows section provides visibility into all CI/CD pipelines that publish to or consume from your Fly Registry.
+
+---
+
+## Workflow Dashboard
+
+Navigate to **Workflows** to see the workflow dashboard:
+
+### Status Overview
+
+<CardGroup cols={4}>
+  <Card title="Running" icon="spinner">
+    Currently executing workflows
+  </Card>
+  <Card title="Succeeded" icon="circle-check">
+    Successfully completed
+  </Card>
+  <Card title="Failed" icon="circle-xmark">
+    Failed workflows requiring attention
+  </Card>
+  <Card title="Pending" icon="clock">
+    Queued and waiting
+  </Card>
+</CardGroup>
+
+### Workflow List
+
+| Column | Description |
+|--------|-------------|
+| **Status** | Visual status indicator |
+| **Workflow** | Workflow name and file |
+| **Repository** | Source repository |
+| **Trigger** | Push, PR, Tag, Manual |
+| **Started** | Start timestamp |
+| **Duration** | Total run time |
+| **Artifacts** | Published artifact count |
+
+---
+
+## Workflow Details
+
+Click on any workflow run to view details:
+
+<Tabs>
+  <Tab title="Summary">
+    ### Run Summary
+    
+    - **Status**: Current status with icon
+    - **Workflow**: Name and file path
+    - **Repository**: Source repository link
+    - **Branch/Tag**: Git ref that triggered
+    - **Commit**: Associated commit hash
+    - **Triggered by**: User or event
+    - **Started**: Start time
+    - **Duration**: Total execution time
+  </Tab>
+  
+  <Tab title="Jobs">
+    ### Job Breakdown
+    
+    View individual jobs in the workflow:
+    
+    ```
+    ├── Build
+    │   ├── Checkout ✅ 5s
+    │   ├── Setup Node ✅ 12s
+    │   ├── Install deps ✅ 45s
+    │   ├── Build ✅ 1m 23s
+    │   └── Test ✅ 2m 15s
+    │
+    ├── Publish
+    │   ├── Setup Fly ✅ 8s
+    │   ├── Configure npm ✅ 3s
+    │   └── Publish ✅ 25s
+    │
+    └── Deploy
+        ├── Deploy staging ✅ 45s
+        └── Smoke tests ✅ 1m 10s
+    ```
+  </Tab>
+  
+  <Tab title="Logs">
+    ### Build Logs
+    
+    View real-time and historical logs:
+    
+    - Full workflow logs
+    - Per-job filtering
+    - Search within logs
+    - Download as file
+  </Tab>
+  
+  <Tab title="Artifacts">
+    ### Published Artifacts
+    
+    Artifacts created by this workflow:
+    
+    | Type | Name | Version | Size |
+    |------|------|---------|------|
+    | npm | @myteam/utils | 2.1.0 | 145 KB |
+    | Docker | api-service | 2.1.0 | 234 MB |
+  </Tab>
+</Tabs>
+
+---
+
+## Filtering Workflows
+
+### Filter Options
+
+| Filter | Description |
+|--------|-------------|
+| **Status** | Running, Succeeded, Failed, Cancelled |
+| **Repository** | Source repository |
+| **Workflow** | Specific workflow file |
+| **Branch** | Git branch |
+| **Author** | Commit author |
+| **Date Range** | Time period |
+
+### Quick Filters
+
+- **My workflows** - Workflows triggered by you
+- **Failed today** - Today's failed runs
+- **Publishing** - Workflows that publish artifacts
+- **Active now** - Currently running
+
+---
+
+## Workflow Monitoring
+
+### Real-Time Updates
+
+Workflow status updates in real-time:
+
+- Live log streaming
+- Progress indicators
+- Instant status changes
+- Push notifications (if enabled)
+
+### Notifications
+
+Configure workflow notifications:
+
+<Tabs>
+  <Tab title="Email">
+    Receive email notifications for:
+    - Workflow failures
+    - Successful deployments
+    - Long-running workflows
+  </Tab>
+  
+  <Tab title="Slack">
+    Post to Slack channels:
+    - Build status updates
+    - Deployment notifications
+    - Error alerts
+  </Tab>
+  
+  <Tab title="Webhook">
+    Send webhook payloads to:
+    - Custom monitoring systems
+    - Incident management tools
+    - Analytics platforms
+  </Tab>
+</Tabs>
+
+---
+
+## Workflow Actions
+
+### Cancel Workflow
+
+Stop a running workflow:
+
+<Steps>
+  <Step title="Find Workflow">
+    Locate the running workflow
+  </Step>
+  
+  <Step title="Click Cancel">
+    Click the **Cancel** button
+  </Step>
+  
+  <Step title="Confirm">
+    Confirm the cancellation
+  </Step>
+</Steps>
+
+### Re-run Workflow
+
+Re-run a completed workflow:
+
+```
+Re-run options:
+├── Re-run all jobs
+├── Re-run failed jobs only
+└── Re-run from specific job
+```
+
+### Download Logs
+
+Export workflow logs:
+
+```bash
+# Via Fly CLI
+fly workflow logs <workflow-id> --output logs.txt
+```
+
+---
+
+## OIDC Workflows
+
+Workflows using OIDC authentication show additional information:
+
+### OIDC Details
+
+| Field | Description |
+|-------|-------------|
+| **Token ID** | Unique OIDC token identifier |
+| **Claims** | Token claims used for authentication |
+| **Policy** | Trust policy that allowed access |
+| **Permissions** | Granted permissions |
+
+### Security Audit
+
+View security-relevant information:
+
+- Token request time
+- Authentication method
+- Source IP address
+- Permissions used
+
+---
+
+## Workflow Analytics
+
+### Metrics
+
+Track workflow performance over time:
+
+| Metric | Description |
+|--------|-------------|
+| **Success Rate** | Percentage of successful runs |
+| **Avg Duration** | Average execution time |
+| **Queue Time** | Time spent waiting to run |
+| **Failure Rate** | Percentage of failed runs |
+
+### Charts
+
+- **Runs over time** - Workflow execution trends
+- **Duration distribution** - Execution time analysis
+- **Failure breakdown** - Categorized failures
+- **Artifacts published** - Publishing activity
+
+---
+
+## Troubleshooting Workflows
+
+<AccordionGroup>
+  <Accordion title="Workflow Failed" icon="circle-xmark" defaultOpen>
+    ### Investigating Failures
+    
+    <Steps>
+      <Step title="Check Logs">
+        View the job logs to identify the failure point
+      </Step>
+      
+      <Step title="Identify Error">
+        Look for error messages and exit codes
+      </Step>
+      
+      <Step title="Check Common Issues">
+        - Authentication failures
+        - Network timeouts
+        - Missing dependencies
+        - Resource limits
+      </Step>
+      
+      <Step title="Fix and Re-run">
+        Address the issue and re-run the workflow
+      </Step>
+    </Steps>
+  </Accordion>
+  
+  <Accordion title="OIDC Authentication Failed" icon="key">
+    **Error:** `Failed to authenticate with OIDC`
+    
+    **Possible causes:**
+    - Trust policy doesn't match workflow
+    - Repository not configured for OIDC
+    - Token request failed
+    
+    **Solutions:**
+    1. Check trust policy in repository settings
+    2. Verify `id-token: write` permission in workflow
+    3. Review OIDC configuration in Fly Web
+  </Accordion>
+  
+  <Accordion title="Publish Failed" icon="upload">
+    **Error:** `Failed to publish artifact`
+    
+    **Possible causes:**
+    - Version already exists
+    - Insufficient permissions
+    - Network timeout
+    
+    **Solutions:**
+    1. Check if version exists already
+    2. Verify publish permissions
+    3. Increase timeout and retry
+  </Accordion>
+  
+  <Accordion title="Workflow Not Triggered" icon="play">
+    **Symptoms:** Expected workflow didn't run
+    
+    **Possible causes:**
+    - Webhook not configured
+    - Branch filter doesn't match
+    - Workflow file error
+    
+    **Solutions:**
+    1. Check webhook delivery in Git provider
+    2. Review workflow trigger conditions
+    3. Validate workflow YAML syntax
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Automated Workflows" icon="gears" href="/developer-workflow/automated-workflows">
+    Configure CI/CD
+  </Card>
+  <Card title="Users & Access" icon="user-shield" href="/fly-web/users-access">
+    Manage permissions
+  </Card>
+</CardGroup>
+

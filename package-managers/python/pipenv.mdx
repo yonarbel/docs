@@ -1,0 +1,171 @@
+---
+title: "Pipenv"
+sidebarTitle: "Pipenv"
+description: "Configure Pipenv to use your Fly Registry for Python package management"
+icon: "lock"
+---
+
+## Overview
+
+Pipenv combines pip and virtualenv for Python dependency management. Configure it to use your JFrog Fly Registry.
+
+---
+
+## Quick Setup
+
+```bash
+# Using Fly Desktop App
+fly config pipenv
+```
+
+---
+
+## Configuration
+
+### Environment Variables
+
+```bash
+export PIP_INDEX_URL="https://your-email:fly_abc123@your-team.jfrog.io/artifactory/api/pypi/pypi/simple"
+export PIP_TRUSTED_HOST="your-team.jfrog.io"
+```
+
+### Pipfile Configuration
+
+Configure your `Pipfile`:
+
+```toml
+[[source]]
+url = "https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple"
+verify_ssl = true
+name = "fly"
+
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+my-internal-package = {version = "*", index = "fly"}
+requests = "*"
+pandas = "*"
+
+[dev-packages]
+pytest = "*"
+black = "*"
+
+[requires]
+python_version = "3.11"
+```
+
+---
+
+## Installing Packages
+
+### From Fly Registry
+
+```bash
+# Install from Pipfile
+pipenv install
+
+# Install specific package from Fly
+pipenv install my-internal-package --index fly
+
+# Install from requirements.txt
+pipenv install -r requirements.txt
+```
+
+### Dev Dependencies
+
+```bash
+pipenv install --dev pytest black mypy
+```
+
+---
+
+## Authentication
+
+### Using .netrc
+
+Create `~/.netrc`:
+
+```
+machine your-team.jfrog.io
+login your-email@example.com
+password fly_abc123...
+```
+
+### Using Environment Variables
+
+```bash
+export PIPENV_PYPI_MIRROR="https://your-email:fly_abc123@your-team.jfrog.io/artifactory/api/pypi/pypi/simple"
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Python with Pipenv
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Pipenv
+        run: pip install pipenv
+      
+      - name: Install dependencies
+        env:
+          PIP_INDEX_URL: https://${{ secrets.FLY_USER }}:${{ secrets.FLY_TOKEN }}@${{ vars.FLY_HOST }}/artifactory/api/pypi/pypi/simple
+        run: pipenv install --dev
+      
+      - name: Run tests
+        run: pipenv run pytest
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Resolution Failed" icon="diagram-project">
+    **Error:** `Could not find a version that satisfies the requirement`
+    
+    **Solutions:**
+    1. Check package exists in specified index
+    2. Verify index URL is correct
+    3. Try `pipenv lock --clear` to reset
+  </Accordion>
+  
+  <Accordion title="Authentication Failed" icon="lock">
+    **Solutions:**
+    1. Check credentials in .netrc
+    2. Verify environment variables are set
+    3. Try URL-embedded credentials
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="pip" icon="python" href="/package-managers/python/pip">
+    pip configuration
+  </Card>
+  <Card title="Twine" icon="upload" href="/package-managers/python/twine">
+    Publishing packages
+  </Card>
+</CardGroup>
+

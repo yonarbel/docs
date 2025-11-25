@@ -1,0 +1,313 @@
+---
+title: "Podman"
+sidebarTitle: "Podman"
+description: "Configure Podman to push and pull images from your Fly Registry"
+icon: "box"
+---
+
+## Overview
+
+Podman is a daemonless container engine that's compatible with Docker. JFrog Fly fully supports Podman for building, pushing, and pulling container images.
+
+---
+
+## Quick Setup
+
+Configure Podman with Fly:
+
+```bash
+# Using Fly Desktop App
+fly config podman
+```
+
+---
+
+## Manual Configuration
+
+### Login to Registry
+
+```bash
+podman login your-team.jfrog.io
+```
+
+When prompted:
+- **Username**: Your email or `fly_user`
+- **Password**: Your Fly access token
+
+### Non-Interactive Login
+
+```bash
+podman login your-team.jfrog.io \
+  --username your-email@example.com \
+  --password fly_abc123...
+```
+
+Or using stdin:
+
+```bash
+echo "fly_abc123..." | podman login your-team.jfrog.io \
+  --username your-email@example.com \
+  --password-stdin
+```
+
+---
+
+## Working with Images
+
+### Pulling Images
+
+```bash
+# Pull from your registry
+podman pull your-team.jfrog.io/docker/my-app:1.0.0
+
+# Pull through Docker Hub proxy
+podman pull your-team.jfrog.io/docker-hub/nginx:alpine
+```
+
+### Tagging Images
+
+```bash
+podman tag my-app:latest your-team.jfrog.io/docker/my-app:1.0.0
+```
+
+### Pushing Images
+
+```bash
+podman push your-team.jfrog.io/docker/my-app:1.0.0
+```
+
+---
+
+## Building Images
+
+### Basic Build
+
+```bash
+# Build
+podman build -t your-team.jfrog.io/docker/my-app:1.0.0 .
+
+# Push
+podman push your-team.jfrog.io/docker/my-app:1.0.0
+```
+
+### Multi-Architecture Builds
+
+Build for multiple platforms using `podman manifest`:
+
+```bash
+# Create manifest
+podman manifest create your-team.jfrog.io/docker/my-app:1.0.0
+
+# Build for amd64
+podman build --platform linux/amd64 \
+  -t your-team.jfrog.io/docker/my-app:1.0.0-amd64 .
+podman manifest add your-team.jfrog.io/docker/my-app:1.0.0 \
+  your-team.jfrog.io/docker/my-app:1.0.0-amd64
+
+# Build for arm64
+podman build --platform linux/arm64 \
+  -t your-team.jfrog.io/docker/my-app:1.0.0-arm64 .
+podman manifest add your-team.jfrog.io/docker/my-app:1.0.0 \
+  your-team.jfrog.io/docker/my-app:1.0.0-arm64
+
+# Push manifest
+podman manifest push your-team.jfrog.io/docker/my-app:1.0.0
+```
+
+---
+
+## Rootless Podman
+
+Podman supports running containers without root privileges:
+
+```bash
+# Login as regular user
+podman login your-team.jfrog.io
+
+# Pull and run
+podman pull your-team.jfrog.io/docker/my-app:1.0.0
+podman run -d -p 3000:3000 your-team.jfrog.io/docker/my-app:1.0.0
+```
+
+### Storage Configuration
+
+Configure rootless storage in `~/.config/containers/storage.conf`:
+
+```toml
+[storage]
+driver = "overlay"
+rootless_storage_path = "$HOME/.local/share/containers/storage"
+```
+
+---
+
+## Registry Configuration
+
+### Short Names
+
+Configure short name aliases in `~/.config/containers/registries.conf`:
+
+```toml
+[aliases]
+"my-app" = "your-team.jfrog.io/docker/my-app"
+```
+
+Then use:
+
+```bash
+podman pull my-app:1.0.0
+```
+
+### Mirror Configuration
+
+Use Fly as a registry mirror:
+
+```toml
+# /etc/containers/registries.conf
+[[registry]]
+prefix = "docker.io"
+location = "your-team.jfrog.io/docker-hub"
+
+[[registry]]
+prefix = "your-team.jfrog.io"
+insecure = false
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Build with Podman
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+      
+      - name: Login to Fly Registry
+        run: |
+          echo "${{ secrets.FLY_TOKEN }}" | podman login your-team.jfrog.io \
+            --username "${{ secrets.FLY_USER }}" \
+            --password-stdin
+      
+      - name: Build and Push
+        run: |
+          podman build -t your-team.jfrog.io/docker/my-app:${{ github.ref_name }} .
+          podman push your-team.jfrog.io/docker/my-app:${{ github.ref_name }}
+```
+
+---
+
+## Podman Compose
+
+Use Podman with compose files:
+
+```bash
+# Install podman-compose
+pip install podman-compose
+
+# Run compose
+podman-compose up -d
+```
+
+### Compose File
+
+```yaml
+# docker-compose.yml (works with podman-compose)
+version: '3.8'
+
+services:
+  app:
+    image: your-team.jfrog.io/docker/my-app:1.0.0
+    ports:
+      - "3000:3000"
+```
+
+---
+
+## Kubernetes with Podman
+
+### Generate Kubernetes YAML
+
+Generate Kubernetes manifests from running containers:
+
+```bash
+podman generate kube my-container > deployment.yaml
+```
+
+### CRI-O Integration
+
+Podman images are compatible with CRI-O in Kubernetes:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app
+spec:
+  containers:
+    - name: app
+      image: your-team.jfrog.io/docker/my-app:1.0.0
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Login Failed" icon="lock">
+    **Error:** `Error: authenticating creds for "your-team.jfrog.io": error pinging registry`
+    
+    **Solutions:**
+    1. Verify registry URL is correct
+    2. Check network connectivity
+    3. Verify credentials are correct
+    4. Try: `podman login --verbose your-team.jfrog.io`
+  </Accordion>
+  
+  <Accordion title="Permission Denied" icon="ban">
+    **Error:** `Error: permission denied`
+    
+    **Solutions:**
+    1. Check file permissions on `~/.local/share/containers`
+    2. Run `podman system migrate` after updates
+    3. Verify SELinux settings if applicable
+  </Accordion>
+  
+  <Accordion title="Storage Issues" icon="database">
+    **Error:** `Error: no space left on device`
+    
+    **Solutions:**
+    1. Clean up unused images: `podman image prune -a`
+    2. Clean up containers: `podman container prune`
+    3. Check storage location disk space
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Docker" icon="docker" href="/package-managers/containers/docker">
+    Docker configuration
+  </Card>
+  <Card title="Kubernetes" icon="dharmachakra" href="/developer-workflow/runtime-deployment">
+    Deploy to Kubernetes
+  </Card>
+</CardGroup>
+

@@ -1,0 +1,475 @@
+---
+title: "CLI Commands"
+sidebarTitle: "Commands"
+description: "Complete reference for all Fly CLI commands"
+icon: "terminal"
+---
+
+## Overview
+
+The Fly CLI provides a comprehensive set of commands for managing artifacts, configuring package managers, and interacting with your Fly Registry.
+
+```bash
+fly [command] [subcommand] [options]
+```
+
+---
+
+## Authentication Commands
+
+### fly auth login
+
+Authenticate with your Fly account:
+
+```bash
+fly auth login
+
+# With specific method
+fly auth login --method browser    # Opens browser for OAuth (default)
+fly auth login --method token      # Enter token manually
+fly auth login --method sso        # Enterprise SSO
+```
+
+### fly auth logout
+
+Log out and clear credentials:
+
+```bash
+fly auth logout
+```
+
+### fly auth status
+
+Check authentication status:
+
+```bash
+fly auth status
+
+# Output:
+# ✓ Authenticated as: developer@example.com
+# ✓ Team: acme-corp
+# ✓ Registry: https://acme-corp.jfrog.io
+# ✓ Token expires: 2024-02-15
+```
+
+### fly auth token
+
+Manage access tokens:
+
+```bash
+# Create new token
+fly auth token create --name "CI Token" --expiry 90d
+
+# List tokens
+fly auth token list
+
+# Revoke token
+fly auth token revoke <token-id>
+```
+
+---
+
+## Configuration Commands
+
+### fly config
+
+Manage configuration:
+
+```bash
+# Show all configuration
+fly config show
+
+# Show configuration in JSON format
+fly config show --format json
+
+# Get specific value
+fly config get sync.interval
+
+# Set value
+fly config set sync.interval 1800
+
+# Reset to default
+fly config reset sync.interval
+
+# Validate configuration
+fly config validate
+```
+
+### fly config auto
+
+Auto-configure all detected package managers:
+
+```bash
+fly config auto
+
+# With specific options
+fly config auto --dry-run        # Show what would be configured
+fly config auto --force          # Overwrite existing configs
+```
+
+### Package Manager Configuration
+
+```bash
+# Configure specific package managers
+fly config npm
+fly config pip
+fly config maven
+fly config gradle
+fly config docker
+fly config go
+fly config nuget
+```
+
+---
+
+## Publishing Commands
+
+### fly publish
+
+Publish artifacts to your registry:
+
+```bash
+# Publish current project
+fly publish
+
+# Publish specific directory
+fly publish ./packages/my-lib
+
+# Publish with options
+fly publish --tag beta                    # Add tag
+fly publish --version 2.0.0-rc.1          # Specific version
+fly publish --dry-run                     # Preview without publishing
+fly publish --git-tag                     # Create git tag
+fly publish --release-notes "Bug fixes"   # Add release notes
+```
+
+### fly unpublish
+
+Remove a published artifact:
+
+```bash
+fly unpublish @myteam/utils@1.0.0
+
+# Force removal without confirmation
+fly unpublish @myteam/utils@1.0.0 --force
+```
+
+<Warning>
+  Unpublishing may break dependent packages. Use with caution.
+</Warning>
+
+---
+
+## Search & Discovery Commands
+
+### fly search
+
+Search for artifacts:
+
+```bash
+# Basic search
+fly search "authentication"
+
+# Search with filters
+fly search "utils" --type npm
+fly search "api" --type docker --since "7 days"
+fly search "auth" --author "developer@example.com"
+
+# Output formats
+fly search "utils" --format table     # Default table format
+fly search "utils" --format json      # JSON output
+fly search "utils" --format yaml      # YAML output
+```
+
+### fly versions
+
+List versions of a package:
+
+```bash
+fly versions @myteam/utils
+
+# Output:
+# @myteam/utils
+# ├── 2.1.0 (latest) - 2h ago
+# ├── 2.0.1 - 3d ago
+# ├── 2.0.0 - 1w ago
+# └── 1.9.0 - 2w ago
+
+# Show all versions
+fly versions @myteam/utils --all
+
+# JSON output
+fly versions @myteam/utils --format json
+```
+
+### fly info
+
+Get detailed artifact information:
+
+```bash
+fly info @myteam/utils@2.1.0
+
+# Output:
+# Package: @myteam/utils@2.1.0
+# Published: 2024-01-15T10:30:00Z
+# Author: developer@example.com
+# Git Commit: abc123def
+# Git Branch: main
+# Git Repo: https://github.com/acme/utils
+# Size: 145.2 KB
+# Downloads: 1,234
+# Dependencies:
+#   - lodash@4.17.21
+#   - axios@1.6.0
+```
+
+---
+
+## Docker Commands
+
+### fly docker
+
+Docker-specific commands:
+
+```bash
+# Configure Docker for Fly
+fly docker login
+
+# Build and tag for Fly registry
+fly docker build -t my-app:1.0.0
+
+# Push to Fly registry
+fly docker push my-app:1.0.0
+
+# Pull from Fly registry
+fly docker pull my-app:1.0.0
+
+# List images in registry
+fly docker images
+
+# Delete image
+fly docker rmi my-app:1.0.0
+```
+
+---
+
+## Helm Commands
+
+### fly helm
+
+Helm-specific commands:
+
+```bash
+# Configure Helm for Fly
+fly helm repo add
+
+# Publish chart
+fly helm push ./my-chart-1.0.0.tgz
+
+# Search charts
+fly helm search my-chart
+
+# Install chart
+fly helm install my-release my-chart --version 1.0.0
+```
+
+---
+
+## Deployment Commands
+
+### fly deploy
+
+Deploy to Kubernetes:
+
+```bash
+# Deploy specific version
+fly deploy my-app:1.0.0 --namespace production
+
+# Deploy with semantic search
+fly deploy --query "latest stable version" --namespace staging
+
+# Deploy with strategy
+fly deploy my-app:2.0.0 --strategy rolling --namespace production
+fly deploy my-app:2.0.0 --strategy canary --canary-weight 10
+```
+
+### fly rollback
+
+Roll back a deployment:
+
+```bash
+# Roll back to previous version
+fly rollback my-app --namespace production
+
+# Roll back to specific version
+fly rollback my-app --to 1.9.0 --namespace production
+```
+
+### fly status
+
+Check deployment status:
+
+```bash
+fly status my-app --namespace production
+```
+
+### fly history
+
+View deployment history:
+
+```bash
+fly history my-app --namespace production
+```
+
+---
+
+## Cache Commands
+
+### fly cache
+
+Manage local cache:
+
+```bash
+# Show cache status
+fly cache status
+
+# Clear cache
+fly cache clear
+
+# Clear specific type
+fly cache clear --type npm
+
+# Preload common packages
+fly cache preload
+
+# Set cache size limit
+fly cache limit 5GB
+```
+
+---
+
+## Sync Commands
+
+### fly sync
+
+Synchronize with registry:
+
+```bash
+# Sync now
+fly sync
+
+# Sync with verbose output
+fly sync --verbose
+
+# Force full sync
+fly sync --full
+```
+
+---
+
+## Utility Commands
+
+### fly version
+
+Show version information:
+
+```bash
+fly version
+
+# Output:
+# Fly Desktop App v1.5.0
+# CLI: v1.5.0
+# MCP Server: v1.2.0
+# OS: darwin arm64
+```
+
+### fly help
+
+Get help on commands:
+
+```bash
+fly help
+fly help publish
+fly help config set
+```
+
+### fly logs
+
+View application logs:
+
+```bash
+# Show recent logs
+fly logs
+
+# Follow logs
+fly logs --follow
+
+# Filter by level
+fly logs --level error
+
+# Export logs
+fly logs --export > fly-logs.txt
+```
+
+### fly doctor
+
+Diagnose common issues:
+
+```bash
+fly doctor
+
+# Output:
+# Running diagnostics...
+# ✓ Network connectivity
+# ✓ Registry reachable
+# ✓ Authentication valid
+# ✓ Package managers detected (4)
+# ⚠ npm: using default registry (run 'fly config npm')
+# ✓ Docker: configured correctly
+# 
+# 1 issue found. Run suggested commands to fix.
+```
+
+---
+
+## Global Options
+
+These options work with any command:
+
+| Option | Description |
+|--------|-------------|
+| `--help, -h` | Show help for command |
+| `--version, -v` | Show version |
+| `--verbose` | Verbose output |
+| `--quiet, -q` | Suppress output |
+| `--format` | Output format (table, json, yaml) |
+| `--config` | Path to config file |
+| `--no-color` | Disable colored output |
+
+---
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success |
+| `1` | General error |
+| `2` | Invalid arguments |
+| `3` | Authentication error |
+| `4` | Network error |
+| `5` | Not found |
+| `6` | Permission denied |
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/desktop-app/configuration">
+    Configure the Desktop App
+  </Card>
+  <Card title="Package Managers" icon="box" href="/package-managers/overview">
+    Package manager guides
+  </Card>
+</CardGroup>
+

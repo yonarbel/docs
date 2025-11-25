@@ -1,0 +1,317 @@
+---
+title: "Twine"
+sidebarTitle: "Twine"
+description: "Publish Python packages to your Fly Registry using Twine"
+icon: "upload"
+---
+
+## Overview
+
+Twine is the standard tool for publishing Python packages to PyPI registries. Use it to publish your packages to JFrog Fly.
+
+---
+
+## Installation
+
+```bash
+pip install twine build
+```
+
+---
+
+## Quick Setup
+
+Configure Twine with your Fly Registry:
+
+```bash
+# Using Fly Desktop App
+fly config twine
+```
+
+Or manually configure `~/.pypirc`.
+
+---
+
+## Configuration
+
+### .pypirc File
+
+Create `~/.pypirc`:
+
+```ini
+[distutils]
+index-servers =
+    fly
+
+[fly]
+repository = https://your-team.jfrog.io/artifactory/api/pypi/pypi
+username = your-email@example.com
+password = fly_abc123...
+```
+
+### Multiple Registries
+
+Configure both Fly and PyPI:
+
+```ini
+[distutils]
+index-servers =
+    fly
+    pypi
+
+[fly]
+repository = https://your-team.jfrog.io/artifactory/api/pypi/pypi
+username = your-email@example.com
+password = fly_abc123...
+
+[pypi]
+username = __token__
+password = pypi-...
+```
+
+---
+
+## Building Packages
+
+### Using build
+
+```bash
+# Build source distribution and wheel
+python -m build
+
+# Output in dist/
+# my_package-1.0.0.tar.gz
+# my_package-1.0.0-py3-none-any.whl
+```
+
+### Using setup.py
+
+```bash
+# Build source distribution
+python setup.py sdist
+
+# Build wheel
+python setup.py bdist_wheel
+```
+
+---
+
+## Publishing
+
+### Basic Publishing
+
+```bash
+# Publish to Fly registry
+twine upload --repository fly dist/*
+
+# Publish to default repository
+twine upload dist/*
+```
+
+### Publishing with Environment Variables
+
+```bash
+export TWINE_REPOSITORY_URL="https://your-team.jfrog.io/artifactory/api/pypi/pypi"
+export TWINE_USERNAME="your-email@example.com"
+export TWINE_PASSWORD="fly_abc123..."
+
+twine upload dist/*
+```
+
+### Command Line Options
+
+```bash
+twine upload \
+  --repository-url https://your-team.jfrog.io/artifactory/api/pypi/pypi \
+  --username your-email@example.com \
+  --password fly_abc123... \
+  dist/*
+```
+
+---
+
+## Project Setup
+
+### pyproject.toml
+
+```toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my-package"
+version = "1.0.0"
+description = "My Python package"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Developer", email = "dev@example.com" }
+]
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "requests>=2.28.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "mypy"]
+
+[project.urls]
+Homepage = "https://github.com/myteam/my-package"
+Documentation = "https://docs.example.com"
+Repository = "https://github.com/myteam/my-package.git"
+
+[tool.setuptools]
+packages = ["my_package"]
+```
+
+### setup.py (Legacy)
+
+```python
+from setuptools import setup, find_packages
+
+setup(
+    name="my-package",
+    version="1.0.0",
+    description="My Python package",
+    author="Developer",
+    author_email="dev@example.com",
+    packages=find_packages(),
+    install_requires=[
+        "requests>=2.28.0",
+    ],
+    python_requires=">=3.8",
+)
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Publish Python Package
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install build tools
+        run: pip install build twine
+      
+      - name: Build package
+        run: python -m build
+      
+      - name: Check package
+        run: twine check dist/*
+      
+      - name: Publish to Fly
+        env:
+          TWINE_REPOSITORY_URL: https://${{ vars.FLY_URL }}/artifactory/api/pypi/pypi
+          TWINE_USERNAME: ${{ secrets.FLY_USER }}
+          TWINE_PASSWORD: ${{ secrets.FLY_TOKEN }}
+        run: twine upload dist/*
+```
+
+### GitLab CI
+
+```yaml
+publish:
+  stage: deploy
+  image: python:3.11
+  script:
+    - pip install build twine
+    - python -m build
+    - twine check dist/*
+    - twine upload --repository-url https://${FLY_HOST}/artifactory/api/pypi/pypi -u ${FLY_USER} -p ${FLY_TOKEN} dist/*
+  only:
+    - tags
+```
+
+---
+
+## Pre-Upload Checks
+
+### Validate Package
+
+```bash
+# Check package before uploading
+twine check dist/*
+```
+
+### View Package Contents
+
+```bash
+# List contents of built package
+tar -tzf dist/my_package-1.0.0.tar.gz
+unzip -l dist/my_package-1.0.0-py3-none-any.whl
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="403 Forbidden" icon="ban">
+    **Error:** `403 Forbidden`
+    
+    **Solutions:**
+    1. Verify you have publish permissions
+    2. Check package name doesn't conflict
+    3. Verify credentials are correct
+  </Accordion>
+  
+  <Accordion title="Invalid Distribution" icon="file-xmark">
+    **Error:** `InvalidDistribution`
+    
+    **Solutions:**
+    1. Run `twine check dist/*` to identify issues
+    2. Ensure README.md is properly formatted
+    3. Verify pyproject.toml/setup.py is valid
+  </Accordion>
+  
+  <Accordion title="Version Already Exists" icon="copy">
+    **Error:** `File already exists`
+    
+    **Solutions:**
+    1. Bump version number
+    2. Delete existing version (if allowed)
+    3. Use unique version suffix for testing
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="pip" icon="python" href="/package-managers/python/pip">
+    Installing packages
+  </Card>
+  <Card title="Pipenv" icon="lock" href="/package-managers/python/pipenv">
+    Pipenv configuration
+  </Card>
+</CardGroup>
+

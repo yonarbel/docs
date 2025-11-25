@@ -1,0 +1,247 @@
+---
+title: "Git Connection"
+sidebarTitle: "Git Connection"
+description: "Link your Git repositories to enable automatic artifact tracking and complete traceability"
+icon: "code-branch"
+---
+
+## Why Connect Git?
+
+Connecting your Git repositories to JFrog Fly enables:
+
+<CardGroup cols={2}>
+  <Card title="Automatic Traceability" icon="link">
+    Every artifact is automatically linked to its source commit
+  </Card>
+  <Card title="Release Tracking" icon="tag">
+    Monitor releases across all connected repositories
+  </Card>
+  <Card title="Workflow Integration" icon="gears">
+    Enable CI/CD pipelines to publish artifacts seamlessly
+  </Card>
+  <Card title="Semantic Search" icon="magnifying-glass">
+    Search artifacts by commit message, author, or branch
+  </Card>
+</CardGroup>
+
+---
+
+## Supported Git Providers
+
+<Tabs>
+  <Tab title="GitHub">
+    ### Connect GitHub
+    
+    <Steps>
+      <Step title="Navigate to Git Settings">
+        In Fly Web, go to **Settings** → **Git Connections**
+      </Step>
+      
+      <Step title="Click 'Connect GitHub'">
+        You'll be redirected to GitHub to authorize the JFrog Fly app
+      </Step>
+      
+      <Step title="Select Repositories">
+        Choose which repositories to connect:
+        - **All repositories** - Full access to current and future repos
+        - **Select repositories** - Choose specific repos to connect
+      </Step>
+      
+      <Step title="Confirm Authorization">
+        Click **Install & Authorize** to complete the connection
+      </Step>
+    </Steps>
+    
+    <Info>
+      JFrog Fly requires the following permissions:
+      - Read access to code and metadata
+      - Read/write access to actions and workflows
+      - Webhook creation for release events
+    </Info>
+  </Tab>
+  
+  <Tab title="GitLab">
+    ### Connect GitLab
+    
+    <Steps>
+      <Step title="Navigate to Git Settings">
+        In Fly Web, go to **Settings** → **Git Connections**
+      </Step>
+      
+      <Step title="Click 'Connect GitLab'">
+        You'll be redirected to GitLab to authorize the integration
+      </Step>
+      
+      <Step title="Select Groups/Projects">
+        Choose which groups or specific projects to connect
+      </Step>
+      
+      <Step title="Grant Access">
+        Confirm the permissions and complete authorization
+      </Step>
+    </Steps>
+    
+    <Note>
+      For self-hosted GitLab instances, contact [fly-support@jfrog.com](mailto:fly-support@jfrog.com) for custom configuration.
+    </Note>
+  </Tab>
+</Tabs>
+
+---
+
+## Repository Configuration
+
+Once connected, each repository can be configured individually:
+
+### Repository Settings
+
+<AccordionGroup>
+  <Accordion title="Artifact Publishing" icon="upload" defaultOpen>
+    Configure how artifacts are published from this repository:
+    
+    ```yaml
+    # .fly/config.yaml
+    publishing:
+      auto_publish: true
+      package_types:
+        - npm
+        - docker
+      version_strategy: semver
+    ```
+  </Accordion>
+  
+  <Accordion title="Branch Protection" icon="shield">
+    Specify which branches can publish to production:
+    
+    ```yaml
+    # .fly/config.yaml
+    branches:
+      production:
+        - main
+        - release/*
+      staging:
+        - develop
+        - feature/*
+    ```
+  </Accordion>
+  
+  <Accordion title="Webhooks" icon="webhook">
+    Fly automatically creates webhooks for:
+    - Push events
+    - Release events
+    - Tag creation
+    - Pull request merges
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Workflow Integration
+
+### GitHub Actions
+
+Add Fly to your GitHub Actions workflow:
+
+```yaml
+name: Publish to Fly
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Fly
+        uses: jfrog/fly-action@v1
+        with:
+          fly-url: ${{ secrets.FLY_URL }}
+          fly-token: ${{ secrets.FLY_TOKEN }}
+      
+      - name: Publish Package
+        run: fly publish
+```
+
+### GitLab CI
+
+Add Fly to your `.gitlab-ci.yml`:
+
+```yaml
+publish:
+  stage: deploy
+  image: jfrog/fly-cli:latest
+  script:
+    - fly config set url $FLY_URL
+    - fly config set token $FLY_TOKEN
+    - fly publish
+  only:
+    - tags
+```
+
+---
+
+## Verifying Connection
+
+After connecting, verify your setup:
+
+<Steps>
+  <Step title="Check Connection Status">
+    In **Settings** → **Git Connections**, verify your repository shows a green "Connected" status
+  </Step>
+  
+  <Step title="Trigger a Test Event">
+    Create a small commit or tag to trigger the webhook
+  </Step>
+  
+  <Step title="Verify in Fly Web">
+    Navigate to **Workflows** to see the event appear
+  </Step>
+</Steps>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Connection Failed" icon="triangle-exclamation">
+    **Possible causes:**
+    - Insufficient permissions on the Git repository
+    - Organization policies blocking third-party apps
+    - Network issues or firewall restrictions
+    
+    **Solution:** Re-authorize the connection and ensure you have admin access to the repository.
+  </Accordion>
+  
+  <Accordion title="Webhooks Not Firing" icon="webhook">
+    **Possible causes:**
+    - Webhook was not created successfully
+    - Webhook URL is blocked by network policies
+    
+    **Solution:** Check the webhook configuration in your Git provider's settings.
+  </Accordion>
+  
+  <Accordion title="Missing Repositories" icon="folder-xmark">
+    **Possible causes:**
+    - Repository was created after the initial connection
+    - Repository is in a different organization
+    
+    **Solution:** Use the "Sync Repositories" button in Git Settings.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Install Desktop App" icon="desktop" href="/getting-started/desktop-app">
+    Set up your local development environment
+  </Card>
+  <Card title="Developer Workflow" icon="code" href="/developer-workflow/overview">
+    Learn the development process with Fly
+  </Card>
+</CardGroup>
+

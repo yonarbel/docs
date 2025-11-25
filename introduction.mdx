@@ -1,71 +1,131 @@
 ---
-title: Introduction
-description: "Welcome to the home of your new documentation"
+title: "JFrog Fly"
+sidebarTitle: "Introduction"
+description: "Your software delivered with agentic wings"
+icon: "rocket"
 ---
 
-<img
-  className="block dark:hidden"
-  src="/images/hero-light.png"
-  alt="Hero Light"
-/>
-<img
-  className="hidden dark:block"
-  src="/images/hero-dark.png"
-  alt="Hero Dark"
-/>
+<Frame>
+  <img
+    className="block dark:hidden rounded-xl"
+    src="/images/hero-light.png"
+    alt="JFrog Fly Hero"
+  />
+  <img
+    className="hidden dark:block rounded-xl"
+    src="/images/hero-dark.png"
+    alt="JFrog Fly Hero"
+  />
+</Frame>
 
-## Setting up
+## Overview
 
-The first step to world-class documentation is setting up your editing environments.
+**JFrog Fly** is an agentic package management platform that enables you to manage, share, and release artifacts directly from your favorite coding agent (IDE and CLI). Making release management a seamless part of your coding workflow.
+
+<Info>
+  **New to Fly?** Start with our [Getting Started guide](/getting-started/overview) to set up your account and begin your journey.
+</Info>
+
+---
+
+## What can you do with JFrog Fly?
 
 <CardGroup cols={2}>
-  <Card
-    title="Edit Your Docs"
-    icon="pen-to-square"
-    href="https://mintlify.com/docs/quickstart"
-  >
-    Get your docs set up locally for easy development
+  <Card title="Unified Package Management" icon="box" color="#40BE46">
+    Store and manage all of your team's software packages, containers, and dependencies in a single place
   </Card>
-  <Card
-    title="Preview Changes"
-    icon="image"
-    href="https://mintlify.com/docs/development"
-  >
-    Preview your changes before you push to make sure they're perfect
+  <Card title="Semantic Releases" icon="tag" color="#40BE46">
+    Release and deploy software packages and containers by their semantic content, ensuring you always release the right version
+  </Card>
+  <Card title="Seamless Integration" icon="plug" color="#40BE46">
+    Configure Git repositories, build pipelines, and GitOps systems to seamlessly publish and consume packages from your Fly Registry
+  </Card>
+  <Card title="Remote Proxying" icon="shield" color="#40BE46">
+    Proxy and cache remote repositories for your most-used packages with intelligent caching
   </Card>
 </CardGroup>
 
-## Make it yours
+---
 
-Update your docs to your brand and add valuable content for the best user conversion.
+## Main Components
 
-<CardGroup cols={2}>
-  <Card
-    title="Customize Style"
-    icon="palette"
-    href="https://mintlify.com/docs/settings/global"
-  >
-    Customize your docs to your company's colors and brands
+<AccordionGroup>
+  <Accordion title="Fly Desktop App" icon="desktop" defaultOpen>
+    **Your Local Agent**
+    
+    Integrates directly with your workstation, managing your local package managers and enabling AI/Agentic commands in your coding agent.
+    
+    <Card title="Learn more about Desktop App" icon="arrow-right" href="/desktop-app/overview" />
+  </Accordion>
+  
+  <Accordion title="Fly Web" icon="globe">
+    **Your Central Hub**
+    
+    The unified view for managing Git connections, tracking artifacts and releases, and administering users/access tokens.
+    
+    <Card title="Explore Fly Web" icon="arrow-right" href="/fly-web/overview" />
+  </Accordion>
+  
+  <Accordion title="Fly Registry" icon="database">
+    **Your Artifact Home**
+    
+    Where your team's artifacts are stored. Your registry URL is based on your unique team subdomain:
+    
+    ```
+    <your-fly-subdomain>.jfrog.io
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Key Features
+
+<Steps>
+  <Step title="Zero-Friction Setup" icon="wand-magic-sparkles">
+    Automatic detection and configuration of local package managers. Get started in minutes, not hours.
+  </Step>
+  <Step title="Agentic Workflows" icon="robot">
+    AI-driven CI/CD configuration and runtime deployment. Let the agent handle the complexity.
+  </Step>
+  <Step title="Semantic Search" icon="magnifying-glass">
+    Find releases and artifacts using natural language queries. Search by what you need, not just by name.
+  </Step>
+  <Step title="Complete Traceability" icon="code-branch">
+    Every artifact is tagged with its Git repository and release. Know exactly where your code came from.
+  </Step>
+  <Step title="Intelligent Automation" icon="lightbulb">
+    Auto-generated release summaries and smart suggestions. Work smarter, not harder.
+  </Step>
+</Steps>
+
+---
+
+## Quick Navigation
+
+<CardGroup cols={3}>
+  <Card title="Getting Started" icon="play" href="/getting-started/overview">
+    Set up your account and team
   </Card>
-  <Card
-    title="Reference APIs"
-    icon="code"
-    href="https://mintlify.com/docs/api-playground/openapi"
-  >
-    Automatically generate endpoints from an OpenAPI spec
+  <Card title="Developer Workflow" icon="code" href="/developer-workflow/overview">
+    Learn the development process
   </Card>
-  <Card
-    title="Add Components"
-    icon="screwdriver-wrench"
-    href="https://mintlify.com/docs/content/components/accordions"
-  >
-    Build interactive features and designs to guide your users
+  <Card title="Desktop App" icon="desktop" href="/desktop-app/overview">
+    Configure your local agent
   </Card>
-  <Card
-    title="Get Inspiration"
-    icon="stars"
-    href="https://mintlify.com/customers"
-  >
-    Check out our showcase of our favorite documentation
+  <Card title="Fly Web" icon="globe" href="/fly-web/overview">
+    Manage from the web interface
+  </Card>
+  <Card title="Package Managers" icon="box-open" href="/package-managers/overview">
+    Configuration reference
+  </Card>
+  <Card title="FAQ" icon="circle-question" href="/resources/faq">
+    Common questions answered
   </Card>
 </CardGroup>
+
+---
+
+<Tip>
+  **Need help?** Contact our support team at [fly-support@jfrog.com](mailto:fly-support@jfrog.com) or visit our [FAQ](/resources/faq).
+</Tip>

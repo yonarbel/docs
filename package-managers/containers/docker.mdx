@@ -1,0 +1,423 @@
+---
+title: "Docker"
+sidebarTitle: "Docker"
+description: "Configure Docker to push and pull images from your Fly Registry"
+icon: "docker"
+---
+
+## Overview
+
+JFrog Fly provides a full-featured Docker registry for storing and managing your container images with complete traceability.
+
+---
+
+## Quick Setup
+
+The fastest way to configure Docker:
+
+```bash
+# Using Fly Desktop App
+fly config docker
+```
+
+This command logs you into your Fly Registry automatically.
+
+---
+
+## Manual Configuration
+
+### Docker Login
+
+Log in to your Fly Registry:
+
+```bash
+docker login your-team.jfrog.io
+```
+
+When prompted:
+- **Username**: Your email or `fly_user`
+- **Password**: Your Fly access token
+
+### Using Environment Variables
+
+```bash
+export DOCKER_USERNAME="your-email@example.com"
+export DOCKER_PASSWORD="fly_abc123..."
+
+echo $DOCKER_PASSWORD | docker login your-team.jfrog.io -u $DOCKER_USERNAME --password-stdin
+```
+
+---
+
+## Working with Images
+
+### Pulling Images
+
+Pull images from your Fly Registry:
+
+```bash
+# Pull from your registry
+docker pull your-team.jfrog.io/docker/my-app:1.0.0
+
+# Pull latest tag
+docker pull your-team.jfrog.io/docker/my-app:latest
+
+# Pull from Docker Hub through Fly proxy
+docker pull your-team.jfrog.io/docker-hub/nginx:alpine
+```
+
+### Tagging Images
+
+Tag images for your registry:
+
+```bash
+# Tag a local image
+docker tag my-app:latest your-team.jfrog.io/docker/my-app:1.0.0
+
+# Tag with multiple tags
+docker tag my-app:latest your-team.jfrog.io/docker/my-app:latest
+docker tag my-app:latest your-team.jfrog.io/docker/my-app:1.0.0
+docker tag my-app:latest your-team.jfrog.io/docker/my-app:1.0
+```
+
+### Pushing Images
+
+Push images to your Fly Registry:
+
+```bash
+# Push single tag
+docker push your-team.jfrog.io/docker/my-app:1.0.0
+
+# Push all tags
+docker push --all-tags your-team.jfrog.io/docker/my-app
+```
+
+---
+
+## Building Images
+
+### Basic Build
+
+Build and push in one workflow:
+
+```bash
+# Build
+docker build -t your-team.jfrog.io/docker/my-app:1.0.0 .
+
+# Push
+docker push your-team.jfrog.io/docker/my-app:1.0.0
+```
+
+### Multi-Platform Builds
+
+Build for multiple architectures:
+
+```bash
+# Create builder
+docker buildx create --name flybuilder --use
+
+# Build and push multi-platform
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --tag your-team.jfrog.io/docker/my-app:1.0.0 \
+  --push \
+  .
+```
+
+---
+
+## Dockerfile Best Practices
+
+### Base Image from Fly Registry
+
+Use base images through your Fly Registry:
+
+```dockerfile
+# Pull through Fly's Docker Hub proxy
+FROM your-team.jfrog.io/docker-hub/node:20-alpine
+
+# Or use your own base image
+FROM your-team.jfrog.io/docker/base-image:latest
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+
+### Adding Labels
+
+Add metadata labels for traceability:
+
+```dockerfile
+FROM your-team.jfrog.io/docker-hub/node:20-alpine
+
+LABEL org.opencontainers.image.source="https://github.com/your-org/your-repo"
+LABEL org.opencontainers.image.revision="${GIT_COMMIT}"
+LABEL org.opencontainers.image.version="1.0.0"
+
+# ... rest of Dockerfile
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Build and Push Docker
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup JFrog Fly
+        uses: jfrog/fly-action@v1
+        with:
+          fly-url: ${{ vars.FLY_URL }}
+      
+      - name: Login to Fly Registry
+        run: fly config docker
+      
+      - name: Build and Push
+        run: |
+          docker build -t ${{ vars.FLY_URL }}/docker/${{ github.repository }}:${{ github.ref_name }} .
+          docker push ${{ vars.FLY_URL }}/docker/${{ github.repository }}:${{ github.ref_name }}
+```
+
+### GitLab CI
+
+```yaml
+build-docker:
+  stage: build
+  image: docker:24
+  services:
+    - docker:dind
+  before_script:
+    - apk add --no-cache curl bash
+    - curl -fsSL https://fly.jfrog.io/install.sh | bash
+    - fly auth login --token ${FLY_TOKEN}
+    - fly config docker
+  script:
+    - docker build -t ${FLY_URL}/docker/${CI_PROJECT_NAME}:${CI_COMMIT_TAG} .
+    - docker push ${FLY_URL}/docker/${CI_PROJECT_NAME}:${CI_COMMIT_TAG}
+  only:
+    - tags
+```
+
+---
+
+## Docker Compose
+
+Use Fly Registry with Docker Compose:
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  app:
+    image: your-team.jfrog.io/docker/my-app:1.0.0
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgres://db:5432/app
+  
+  db:
+    image: your-team.jfrog.io/docker-hub/postgres:15-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+```
+
+### Login for Compose
+
+Ensure Docker is logged in before running compose:
+
+```bash
+fly config docker
+docker compose pull
+docker compose up -d
+```
+
+---
+
+## Kubernetes Integration
+
+### Image Pull Secrets
+
+Create a Kubernetes secret for pulling images:
+
+```bash
+# Using Fly CLI
+fly k8s create-secret --namespace production
+
+# Or manually
+kubectl create secret docker-registry fly-registry-secret \
+  --docker-server=your-team.jfrog.io \
+  --docker-username=your-email@example.com \
+  --docker-password=fly_abc123... \
+  --namespace production
+```
+
+### Using in Deployments
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+        - name: fly-registry-secret
+      containers:
+        - name: app
+          image: your-team.jfrog.io/docker/my-app:1.0.0
+```
+
+---
+
+## Managing Images
+
+### List Images
+
+```bash
+# Using Fly CLI
+fly docker images
+
+# Search for images
+fly search --type docker "api"
+```
+
+### Delete Images
+
+```bash
+# Using Fly CLI
+fly docker rmi my-app:1.0.0
+
+# Delete specific digest
+fly docker rmi my-app@sha256:abc123...
+```
+
+### Image Details
+
+```bash
+# View image details
+fly info --type docker my-app:1.0.0
+```
+
+---
+
+## Proxying Docker Hub
+
+Access Docker Hub images through your Fly Registry:
+
+### Benefits
+
+- Faster pulls (cached locally)
+- No rate limiting issues
+- Security scanning before use
+- Audit trail of all images used
+
+### Usage
+
+```bash
+# Instead of:
+docker pull nginx:alpine
+
+# Use:
+docker pull your-team.jfrog.io/docker-hub/nginx:alpine
+```
+
+### Configure as Mirror
+
+Configure Docker to use Fly as a mirror:
+
+```json
+// /etc/docker/daemon.json
+{
+  "registry-mirrors": ["https://your-team.jfrog.io"]
+}
+```
+
+Then restart Docker:
+
+```bash
+sudo systemctl restart docker
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Login Failed" icon="lock">
+    **Error:** `unauthorized: authentication required`
+    
+    **Solutions:**
+    1. Verify credentials: `fly auth status`
+    2. Re-login: `fly config docker`
+    3. Check token hasn't expired
+    4. Verify registry URL is correct
+  </Accordion>
+  
+  <Accordion title="Push Failed" icon="upload">
+    **Error:** `denied: requested access to the resource is denied`
+    
+    **Solutions:**
+    1. Verify you have push permissions
+    2. Check repository name format
+    3. Ensure you're logged in to the correct registry
+  </Accordion>
+  
+  <Accordion title="Pull Failed" icon="download">
+    **Error:** `manifest unknown` or `not found`
+    
+    **Solutions:**
+    1. Verify image name and tag exist
+    2. Check registry URL is correct
+    3. Ensure image was pushed successfully
+  </Accordion>
+  
+  <Accordion title="Slow Pulls" icon="clock">
+    **Symptoms:** Images take long time to pull
+    
+    **Solutions:**
+    1. Enable caching in Fly Registry
+    2. Use smaller base images (alpine)
+    3. Check network connectivity
+    4. Consider using buildx with cache
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Podman" icon="box" href="/package-managers/containers/podman">
+    Use Podman instead of Docker
+  </Card>
+  <Card title="Kubernetes Deployment" icon="dharmachakra" href="/developer-workflow/runtime-deployment">
+    Deploy to Kubernetes
+  </Card>
+</CardGroup>
+

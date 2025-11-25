@@ -1,0 +1,404 @@
+---
+title: "Runtime Deployment"
+sidebarTitle: "Runtime Deployment"
+description: "Deploy your artifacts to Kubernetes and cloud environments with JFrog Fly"
+icon: "rocket"
+---
+
+## Overview
+
+JFrog Fly provides seamless deployment capabilities for Kubernetes and cloud environments, enabling you to deploy artifacts directly from your registry with complete traceability.
+
+<CardGroup cols={2}>
+  <Card title="Kubernetes" icon="dharmachakra">
+    Native K8s integration with image pull secrets
+  </Card>
+  <Card title="GitOps" icon="code-branch">
+    Support for ArgoCD and Flux
+  </Card>
+  <Card title="Helm" icon="layer-group">
+    Helm chart storage and deployment
+  </Card>
+  <Card title="Semantic Deploy" icon="brain">
+    Deploy by description, not just version
+  </Card>
+</CardGroup>
+
+---
+
+## Kubernetes Deployment
+
+### Creating Image Pull Secrets
+
+Generate Kubernetes secrets to pull images from your Fly Registry:
+
+```bash
+fly k8s create-secret --namespace production
+```
+
+This creates a secret named `fly-registry-secret`:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fly-registry-secret
+  namespace: production
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: <base64-encoded-credentials>
+```
+
+### Using in Deployments
+
+Reference the secret in your deployment:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+        - name: fly-registry-secret
+      containers:
+        - name: app
+          image: myteam.jfrog.io/docker/my-app:1.2.0
+```
+
+### Agentic Deployment
+
+Use natural language to deploy:
+
+```
+"Deploy the latest version of auth-service to staging"
+"Update the production deployment to version 2.1.0"
+"Roll back api-gateway to the previous version"
+```
+
+---
+
+## GitOps Integration
+
+### ArgoCD
+
+Configure ArgoCD to pull images from your Fly Registry:
+
+<Steps>
+  <Step title="Create Repository Secret">
+    ```bash
+    fly argocd create-secret --namespace argocd
+    ```
+  </Step>
+  
+  <Step title="Configure ArgoCD Repository">
+    ```yaml
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: fly-helm-repo
+      namespace: argocd
+      labels:
+        argocd.argoproj.io/secret-type: repository
+    stringData:
+      url: https://myteam.jfrog.io/artifactory/helm
+      username: ${FLY_USER}
+      password: ${FLY_TOKEN}
+      type: helm
+    ```
+  </Step>
+  
+  <Step title="Deploy Application">
+    ```yaml
+    apiVersion: argoproj.io/v1alpha1
+    kind: Application
+    metadata:
+      name: my-app
+    spec:
+      source:
+        repoURL: https://myteam.jfrog.io/artifactory/helm
+        chart: my-app
+        targetRevision: 1.2.0
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: production
+    ```
+  </Step>
+</Steps>
+
+### Flux
+
+Configure Flux to work with Fly:
+
+```yaml
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: fly-charts
+  namespace: flux-system
+spec:
+  interval: 10m
+  url: https://myteam.jfrog.io/artifactory/helm
+  secretRef:
+    name: fly-registry-credentials
+
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: my-app
+  namespace: production
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: my-app
+      version: ">=1.0.0"
+      sourceRef:
+        kind: HelmRepository
+        name: fly-charts
+        namespace: flux-system
+```
+
+---
+
+## Helm Chart Management
+
+### Publishing Charts
+
+Publish Helm charts to your Fly Registry:
+
+```bash
+# Package and publish
+helm package ./my-chart
+fly helm publish my-chart-1.0.0.tgz
+
+# Or use Fly CLI directly
+fly publish --type helm ./my-chart
+```
+
+### Chart Repository Configuration
+
+Add your Fly Registry as a Helm repository:
+
+```bash
+fly config helm
+
+# Or manually:
+helm repo add fly https://myteam.jfrog.io/artifactory/helm \
+  --username ${FLY_USER} \
+  --password ${FLY_TOKEN}
+```
+
+### Installing Charts
+
+```bash
+# Update repository index
+helm repo update
+
+# Install a chart
+helm install my-app fly/my-app --version 1.2.0
+
+# Or use Fly CLI
+fly helm install my-app --version 1.2.0 --namespace production
+```
+
+---
+
+## Semantic Deployment
+
+### Deploy by Description
+
+Instead of memorizing version numbers, deploy using semantic search:
+
+```bash
+# Deploy by feature
+fly deploy --query "the version with OAuth2 support" --namespace staging
+
+# Deploy by date
+fly deploy --query "the release from last Monday" --namespace production
+
+# Deploy by author
+fly deploy --query "John's latest build" --namespace dev
+```
+
+### Version Resolution
+
+Fly resolves your query to a specific version:
+
+```
+$ fly deploy --query "the version that fixed the login bug"
+
+Found matching release:
+  Version: 2.1.3
+  Published: 2024-01-15 10:30:00
+  Commit: abc123def
+  Message: "Fix: Resolve OAuth login redirect issue (#145)"
+
+Deploy auth-service:2.1.3 to staging? [y/N]
+```
+
+---
+
+## Deployment Strategies
+
+### Rolling Update
+
+```bash
+fly deploy my-app:2.0.0 \
+  --strategy rolling \
+  --max-unavailable 25% \
+  --max-surge 25%
+```
+
+### Blue-Green Deployment
+
+```bash
+fly deploy my-app:2.0.0 \
+  --strategy blue-green \
+  --namespace production
+```
+
+### Canary Deployment
+
+```bash
+fly deploy my-app:2.0.0 \
+  --strategy canary \
+  --canary-weight 10 \
+  --namespace production
+```
+
+---
+
+## Rollback
+
+### Quick Rollback
+
+Roll back to the previous version:
+
+```bash
+fly rollback my-app --namespace production
+```
+
+### Rollback to Specific Version
+
+```bash
+fly rollback my-app --to 1.9.0 --namespace production
+```
+
+### View Deployment History
+
+```bash
+fly history my-app --namespace production
+
+# Output:
+# Deployment History for my-app (production)
+# ─────────────────────────────────────────
+# v5  2.0.0  2024-01-15 14:00  current
+# v4  1.9.0  2024-01-10 09:30  
+# v3  1.8.0  2024-01-05 16:45  
+# v2  1.7.0  2024-01-01 11:00  
+# v1  1.6.0  2023-12-20 10:15
+```
+
+---
+
+## Monitoring Deployments
+
+### Deployment Status
+
+```bash
+fly status my-app --namespace production
+
+# Output:
+# Deployment: my-app
+# Namespace:  production
+# Replicas:   3/3 ready
+# Image:      myteam.jfrog.io/docker/my-app:2.0.0
+# Status:     Running
+# Events:
+#   - Scaled up to 3 replicas (2m ago)
+#   - Successfully pulled image (3m ago)
+#   - Created deployment (3m ago)
+```
+
+### Logs
+
+```bash
+fly logs my-app --namespace production --follow
+```
+
+---
+
+## Environment Configuration
+
+### Using ConfigMaps and Secrets
+
+Deploy with environment-specific configuration:
+
+```bash
+fly deploy my-app:2.0.0 \
+  --namespace production \
+  --config-map app-config \
+  --secret app-secrets
+```
+
+### Environment Variables
+
+```bash
+fly deploy my-app:2.0.0 \
+  --namespace production \
+  --env DATABASE_URL=postgres://... \
+  --env LOG_LEVEL=info
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Image Pull Error" icon="download">
+    **Error:** `ImagePullBackOff` or `ErrImagePull`
+    
+    **Solutions:**
+    1. Verify image pull secret exists: `kubectl get secret fly-registry-secret`
+    2. Check secret is referenced in deployment
+    3. Verify credentials: `fly auth status`
+    4. Test pull manually: `docker pull myteam.jfrog.io/docker/my-app:tag`
+  </Accordion>
+  
+  <Accordion title="Deployment Failed" icon="xmark">
+    **Error:** `Deployment failed to progress`
+    
+    **Solutions:**
+    1. Check pod status: `kubectl describe pods -l app=my-app`
+    2. View container logs: `fly logs my-app`
+    3. Verify resource limits are appropriate
+    4. Roll back to working version: `fly rollback my-app`
+  </Accordion>
+  
+  <Accordion title="Helm Chart Not Found" icon="magnifying-glass">
+    **Error:** `Chart not found in repository`
+    
+    **Solutions:**
+    1. Update repository: `helm repo update`
+    2. Verify chart exists: `fly search --type helm my-chart`
+    3. Check repository URL configuration
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Fly Web Releases" icon="tag" href="/fly-web/releases">
+    Track releases in Fly Web
+  </Card>
+  <Card title="Helm Configuration" icon="layer-group" href="/package-managers/containers/docker">
+    Detailed Helm setup
+  </Card>
+</CardGroup>
+

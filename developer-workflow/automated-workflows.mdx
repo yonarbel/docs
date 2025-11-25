@@ -1,0 +1,403 @@
+---
+title: "Automated Workflows"
+sidebarTitle: "Automated Workflows"
+description: "Integrate JFrog Fly with your CI/CD pipelines for automated artifact management"
+icon: "gears"
+---
+
+## Overview
+
+JFrog Fly integrates seamlessly with popular CI/CD platforms to automate artifact publishing, versioning, and deployment.
+
+<CardGroup cols={2}>
+  <Card title="GitHub Actions" icon="github">
+    Native integration with GitHub workflows
+  </Card>
+  <Card title="GitLab CI" icon="gitlab">
+    Full support for GitLab pipelines
+  </Card>
+  <Card title="Jenkins" icon="jenkins">
+    Plugin and CLI support for Jenkins
+  </Card>
+  <Card title="Other CI/CD" icon="circle-nodes">
+    CLI-based integration for any platform
+  </Card>
+</CardGroup>
+
+---
+
+## GitHub Actions Integration
+
+### Quick Setup with Fly Agent
+
+Use the AI-powered setup in your IDE:
+
+```
+"Configure my GitHub Actions workflow for Fly"
+```
+
+Or manually add the Fly action to your workflow:
+
+### Basic Workflow
+
+```yaml
+name: Build and Publish
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write  # Required for OIDC
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup JFrog Fly
+        uses: jfrog/fly-action@v1
+        with:
+          fly-url: ${{ vars.FLY_URL }}
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Run Tests
+        run: npm test
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Publish to Fly
+        if: github.event_name == 'release'
+        run: npm publish
+```
+
+### Docker Build and Push
+
+```yaml
+name: Docker Build
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup JFrog Fly
+        uses: jfrog/fly-action@v1
+        with:
+          fly-url: ${{ vars.FLY_URL }}
+      
+      - name: Configure Docker for Fly
+        run: fly config docker
+      
+      - name: Build and Push
+        run: |
+          docker build -t ${{ vars.FLY_URL }}/docker/myapp:${{ github.ref_name }} .
+          docker push ${{ vars.FLY_URL }}/docker/myapp:${{ github.ref_name }}
+```
+
+### Multi-Package Monorepo
+
+```yaml
+name: Monorepo Publish
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'packages/api/**'
+            web:
+              - 'packages/web/**'
+            shared:
+              - 'packages/shared/**'
+  
+  publish:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: ${{ fromJson(needs.detect-changes.outputs.packages) }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup JFrog Fly
+        uses: jfrog/fly-action@v1
+        with:
+          fly-url: ${{ vars.FLY_URL }}
+      
+      - name: Publish Changed Package
+        run: |
+          cd packages/${{ matrix.package }}
+          fly publish
+```
+
+---
+
+## GitLab CI Integration
+
+### Basic Pipeline
+
+```yaml
+stages:
+  - test
+  - build
+  - publish
+
+variables:
+  FLY_URL: ${CI_FLY_URL}
+
+.fly-setup: &fly-setup
+  before_script:
+    - curl -fsSL https://fly.jfrog.io/install.sh | bash
+    - fly auth login --token ${FLY_TOKEN}
+    - fly config auto
+
+test:
+  stage: test
+  <<: *fly-setup
+  script:
+    - npm ci
+    - npm test
+
+build:
+  stage: build
+  <<: *fly-setup
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+publish:
+  stage: publish
+  <<: *fly-setup
+  script:
+    - fly publish
+  only:
+    - tags
+```
+
+### Docker Pipeline
+
+```yaml
+docker-build:
+  stage: build
+  image: docker:24
+  services:
+    - docker:dind
+  before_script:
+    - apk add --no-cache curl bash
+    - curl -fsSL https://fly.jfrog.io/install.sh | bash
+    - fly auth login --token ${FLY_TOKEN}
+    - fly config docker
+  script:
+    - docker build -t ${FLY_URL}/docker/${CI_PROJECT_NAME}:${CI_COMMIT_TAG} .
+    - docker push ${FLY_URL}/docker/${CI_PROJECT_NAME}:${CI_COMMIT_TAG}
+  only:
+    - tags
+```
+
+---
+
+## OIDC Authentication
+
+JFrog Fly supports OIDC (OpenID Connect) for secure, tokenless authentication in CI/CD:
+
+### GitHub Actions OIDC
+
+```yaml
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # Enable OIDC
+    
+    steps:
+      - uses: jfrog/fly-action@v1
+        with:
+          fly-url: ${{ vars.FLY_URL }}
+          # No token needed - uses OIDC
+```
+
+### Benefits of OIDC
+
+<CardGroup cols={2}>
+  <Card title="No Stored Secrets" icon="key-skeleton">
+    No need to store long-lived tokens in CI secrets
+  </Card>
+  <Card title="Automatic Rotation" icon="rotate">
+    Short-lived tokens are generated per-workflow
+  </Card>
+  <Card title="Audit Trail" icon="clipboard-list">
+    Clear attribution of which workflow published each artifact
+  </Card>
+  <Card title="Scoped Access" icon="shield">
+    Tokens are scoped to specific repositories and workflows
+  </Card>
+</CardGroup>
+
+---
+
+## Environment Variables
+
+### Required Variables
+
+| Variable | Description |
+|----------|-------------|
+| `FLY_URL` | Your Fly Registry URL (e.g., `https://myteam.jfrog.io`) |
+| `FLY_TOKEN` | Access token (not needed with OIDC) |
+
+### Optional Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `FLY_LOG_LEVEL` | Logging verbosity | `info` |
+| `FLY_TIMEOUT` | Request timeout in seconds | `60` |
+| `FLY_RETRY_COUNT` | Number of retries on failure | `3` |
+
+---
+
+## Workflow Triggers
+
+### Common Trigger Patterns
+
+<AccordionGroup>
+  <Accordion title="On Release" icon="tag" defaultOpen>
+    Publish when a GitHub release is created:
+    ```yaml
+    on:
+      release:
+        types: [published]
+    ```
+  </Accordion>
+  
+  <Accordion title="On Tag" icon="code-branch">
+    Publish when a version tag is pushed:
+    ```yaml
+    on:
+      push:
+        tags:
+          - 'v*'
+    ```
+  </Accordion>
+  
+  <Accordion title="On Merge to Main" icon="code-merge">
+    Publish snapshot/dev versions on merge:
+    ```yaml
+    on:
+      push:
+        branches: [main]
+    ```
+  </Accordion>
+  
+  <Accordion title="Manual Trigger" icon="hand-pointer">
+    Allow manual publishing:
+    ```yaml
+    on:
+      workflow_dispatch:
+        inputs:
+          version:
+            description: 'Version to publish'
+            required: true
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Release Summaries
+
+Fly automatically generates release summaries for your artifacts:
+
+```yaml
+- name: Publish with Release Notes
+  run: |
+    fly publish \
+      --release-notes "$(cat CHANGELOG.md)" \
+      --generate-summary
+```
+
+The generated summary includes:
+- List of commits since last release
+- Authors and contributors
+- Changed files summary
+- Breaking changes (if detected)
+
+---
+
+## Troubleshooting CI/CD
+
+<AccordionGroup>
+  <Accordion title="OIDC Authentication Failed" icon="lock">
+    **Error:** `Failed to get OIDC token`
+    
+    **Solutions:**
+    1. Ensure `id-token: write` permission is set
+    2. Verify OIDC is configured in Fly Web settings
+    3. Check the repository is allowed in OIDC policy
+  </Accordion>
+  
+  <Accordion title="Artifact Already Exists" icon="copy">
+    **Error:** `Version 1.0.0 already exists`
+    
+    **Solutions:**
+    1. Bump your version number
+    2. Use `--force` to overwrite (not recommended)
+    3. Use unique version suffixes: `1.0.0-${CI_COMMIT_SHORT_SHA}`
+  </Accordion>
+  
+  <Accordion title="Network Timeout" icon="clock">
+    **Error:** `Connection timed out`
+    
+    **Solutions:**
+    1. Increase timeout: `FLY_TIMEOUT=120`
+    2. Check CI runner has network access to Fly
+    3. Enable retries: `FLY_RETRY_COUNT=5`
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Runtime Deployment" icon="rocket" href="/developer-workflow/runtime-deployment">
+    Deploy to production environments
+  </Card>
+  <Card title="Fly Web Workflows" icon="globe" href="/fly-web/workflows">
+    Monitor workflows in Fly Web
+  </Card>
+</CardGroup>
+

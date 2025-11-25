@@ -1,0 +1,341 @@
+---
+title: "Artifacts"
+sidebarTitle: "Artifacts"
+description: "Browse, search, and manage all artifacts in your Fly Registry"
+icon: "box"
+---
+
+## Overview
+
+The Artifacts section provides a comprehensive view of all packages, containers, and other artifacts stored in your Fly Registry.
+
+---
+
+## Artifact Browser
+
+Navigate to **Artifacts** in the sidebar to browse your registry:
+
+### Views
+
+<Tabs>
+  <Tab title="List View">
+    Traditional list showing:
+    - Artifact name and type
+    - Latest version
+    - Last updated
+    - Download count
+    - Size
+  </Tab>
+  
+  <Tab title="Grid View">
+    Visual card-based view with:
+    - Package icon/logo
+    - Name and description
+    - Version badge
+    - Quick actions
+  </Tab>
+  
+  <Tab title="Tree View">
+    Hierarchical view organized by:
+    - Package type
+    - Namespace/scope
+    - Repository structure
+  </Tab>
+</Tabs>
+
+### Filtering
+
+Use filters to find specific artifacts:
+
+| Filter | Options |
+|--------|---------|
+| **Type** | npm, pip, Docker, Maven, Go, Helm, etc. |
+| **Repository** | Source Git repository |
+| **Author** | Publishing user/team |
+| **Date Range** | Created/modified date |
+| **Tags** | Custom artifact tags |
+
+---
+
+## Artifact Details
+
+Click on any artifact to view detailed information:
+
+<AccordionGroup>
+  <Accordion title="Overview" icon="circle-info" defaultOpen>
+    ### Package Information
+    
+    - **Name**: Full package name with scope
+    - **Description**: Package description
+    - **Type**: Package manager type
+    - **License**: Software license
+    - **Homepage**: Project homepage URL
+    - **Repository**: Source code repository
+  </Accordion>
+  
+  <Accordion title="Versions" icon="code-branch">
+    ### Version History
+    
+    List of all published versions with:
+    - Version number
+    - Publish date
+    - Publisher
+    - Git commit
+    - Tags (latest, stable, beta, etc.)
+    - Download count
+    
+    ```
+    2.1.0 (latest) - 2h ago by developer@example.com
+    2.0.1 - 3d ago by ci@example.com  
+    2.0.0 - 1w ago by developer@example.com
+    1.9.0 - 2w ago by developer@example.com
+    ```
+  </Accordion>
+  
+  <Accordion title="Dependencies" icon="diagram-project">
+    ### Dependency Information
+    
+    **Dependencies** - Packages this artifact depends on
+    
+    **Dependents** - Packages that depend on this artifact
+    
+    View the full dependency tree and identify potential issues.
+  </Accordion>
+  
+  <Accordion title="Git Info" icon="code-branch">
+    ### Source Traceability
+    
+    - **Repository**: Source Git repository
+    - **Commit**: Associated commit hash
+    - **Branch**: Source branch
+    - **Author**: Commit author
+    - **Message**: Commit message
+    - **CI Workflow**: Build workflow that published
+  </Accordion>
+  
+  <Accordion title="Security" icon="shield">
+    ### Security Information
+    
+    - **Vulnerability scan results**
+    - **License compliance status**
+    - **Security advisories**
+    - **Signature verification**
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Searching Artifacts
+
+### Basic Search
+
+Use the search bar at the top of the page:
+
+```
+@myteam/utils
+authentication
+docker/api-gateway
+```
+
+### Advanced Search
+
+Use search operators for more precise results:
+
+| Operator | Example | Description |
+|----------|---------|-------------|
+| `type:` | `type:npm lodash` | Filter by package type |
+| `repo:` | `repo:acme/backend utils` | Filter by source repo |
+| `author:` | `author:john@example.com` | Filter by publisher |
+| `tag:` | `tag:production` | Filter by artifact tag |
+| `created:` | `created:>2024-01-01` | Filter by date |
+| `size:` | `size:>1MB` | Filter by size |
+
+### Semantic Search
+
+Use natural language to find artifacts:
+
+```
+"authentication library that supports OAuth2"
+"docker image for postgres database"
+"utility functions for date formatting"
+```
+
+---
+
+## Managing Artifacts
+
+### Adding Tags
+
+Add tags to artifacts for organization:
+
+<Steps>
+  <Step title="Select Artifact">
+    Navigate to the artifact detail page
+  </Step>
+  
+  <Step title="Click Tags">
+    Find the Tags section and click **Add Tag**
+  </Step>
+  
+  <Step title="Enter Tag Name">
+    Enter a tag name (e.g., `production`, `stable`, `deprecated`)
+  </Step>
+</Steps>
+
+### Promoting Artifacts
+
+Promote artifacts between environments:
+
+```
+Development → Staging → Production
+```
+
+<Steps>
+  <Step title="Select Version">
+    Find the version you want to promote
+  </Step>
+  
+  <Step title="Click Promote">
+    Click the **Promote** button
+  </Step>
+  
+  <Step title="Select Target">
+    Choose the target repository or environment
+  </Step>
+</Steps>
+
+### Deleting Artifacts
+
+<Warning>
+  Deleting artifacts may break dependent packages. Use with caution.
+</Warning>
+
+<Steps>
+  <Step title="Go to Version">
+    Navigate to the specific version
+  </Step>
+  
+  <Step title="Click Delete">
+    Click **Delete** in the actions menu
+  </Step>
+  
+  <Step title="Confirm">
+    Type the artifact name to confirm deletion
+  </Step>
+</Steps>
+
+---
+
+## Download Statistics
+
+View download statistics for any artifact:
+
+### Metrics Available
+
+- **Total downloads**: All-time download count
+- **Downloads over time**: Graph showing download trends
+- **Downloads by version**: Breakdown by version
+- **Geographic distribution**: Downloads by region
+- **Top consumers**: Teams/projects using this artifact
+
+### Export Data
+
+Export download data for analysis:
+
+```bash
+# CLI
+fly stats @myteam/utils --format csv --output stats.csv
+```
+
+---
+
+## Artifact Metadata
+
+### Viewing Metadata
+
+Each artifact includes metadata:
+
+```json
+{
+  "name": "@myteam/utils",
+  "version": "2.1.0",
+  "type": "npm",
+  "published": "2024-01-15T10:30:00Z",
+  "publisher": "developer@example.com",
+  "git": {
+    "repository": "https://github.com/acme/utils",
+    "commit": "abc123def456",
+    "branch": "main"
+  },
+  "checksums": {
+    "sha256": "abc123...",
+    "sha1": "def456..."
+  },
+  "size": 148576,
+  "downloads": 1234
+}
+```
+
+### Custom Properties
+
+Add custom properties to artifacts:
+
+```bash
+# Via CLI
+fly prop set @myteam/utils@2.1.0 approved=true reviewer=jane@example.com
+```
+
+---
+
+## Bulk Operations
+
+Select multiple artifacts for bulk actions:
+
+- **Tag**: Apply tags to multiple artifacts
+- **Delete**: Remove multiple versions
+- **Export**: Download artifact list as CSV
+- **Promote**: Promote multiple artifacts together
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Artifact Not Found" icon="magnifying-glass">
+    **Possible causes:**
+    - Artifact was deleted
+    - Incorrect package name/scope
+    - Search filters too restrictive
+    
+    **Solutions:**
+    1. Clear all filters and search again
+    2. Check exact package name in source project
+    3. Verify publish was successful in Workflows
+  </Accordion>
+  
+  <Accordion title="Download Failed" icon="download">
+    **Possible causes:**
+    - Authentication expired
+    - Network issues
+    - Artifact was deleted
+    
+    **Solutions:**
+    1. Re-authenticate: `fly auth login`
+    2. Check network connectivity
+    3. Verify artifact still exists
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Releases" icon="tag" href="/fly-web/releases">
+    Track release history
+  </Card>
+  <Card title="Package Managers" icon="box" href="/package-managers/overview">
+    Configure package managers
+  </Card>
+</CardGroup>
+

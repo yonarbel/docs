@@ -1,0 +1,360 @@
+---
+title: "Releases"
+sidebarTitle: "Releases"
+description: "Track releases across all repositories and manage release lifecycle"
+icon: "tag"
+---
+
+## Overview
+
+The Releases section provides a unified view of all releases across your connected repositories, enabling you to track what's deployed, compare versions, and manage the release lifecycle.
+
+---
+
+## Release List
+
+Navigate to **Releases** in the sidebar to view all releases:
+
+### Display Columns
+
+| Column | Description |
+|--------|-------------|
+| **Version** | Release version (semantic version) |
+| **Repository** | Source repository |
+| **Date** | Release timestamp |
+| **Author** | Who created the release |
+| **Artifacts** | Number of associated artifacts |
+| **Status** | Release status (draft, published, deployed) |
+
+### Filtering
+
+Filter releases by:
+
+- **Repository**: Specific source repository
+- **Date Range**: Release date
+- **Author**: Release creator
+- **Status**: Draft, Published, Deployed, Deprecated
+- **Type**: Major, Minor, Patch releases
+
+---
+
+## Release Details
+
+Click on any release to view comprehensive details:
+
+<Tabs>
+  <Tab title="Overview">
+    ### Release Information
+    
+    - **Version**: Full version number
+    - **Repository**: Source repository link
+    - **Tag**: Git tag associated
+    - **Created**: Release timestamp
+    - **Author**: Creator's name and email
+    - **Status**: Current release status
+  </Tab>
+  
+  <Tab title="Release Notes">
+    ### Release Notes
+    
+    View and edit release notes:
+    
+    - Auto-generated summary of changes
+    - Manual notes and documentation
+    - Breaking changes section
+    - Migration guides
+    - Links to related issues/PRs
+  </Tab>
+  
+  <Tab title="Artifacts">
+    ### Associated Artifacts
+    
+    List of all artifacts published with this release:
+    
+    | Type | Name | Version |
+    |------|------|---------|
+    | npm | @myteam/frontend | 2.1.0 |
+    | npm | @myteam/backend | 2.1.0 |
+    | Docker | api-gateway | 2.1.0 |
+    | Helm | my-app | 2.1.0 |
+  </Tab>
+  
+  <Tab title="Commits">
+    ### Commit History
+    
+    Commits included in this release:
+    
+    ```
+    abc123 - Fix authentication bug (#145)
+    def456 - Add OAuth2 support (#142)
+    ghi789 - Update dependencies (#140)
+    jkl012 - Refactor user service (#138)
+    ```
+  </Tab>
+  
+  <Tab title="Deployments">
+    ### Deployment Status
+    
+    Where this release is deployed:
+    
+    | Environment | Status | Deployed |
+    |-------------|--------|----------|
+    | Production | ✅ Active | 2h ago |
+    | Staging | ✅ Active | 5h ago |
+    | Development | ⏹️ Superseded | 2d ago |
+  </Tab>
+</Tabs>
+
+---
+
+## Creating Releases
+
+### Automatic Releases
+
+Fly automatically creates releases when:
+
+- Git tags matching `v*` are pushed
+- GitHub/GitLab releases are created
+- CI workflows complete with `fly publish --release`
+
+### Manual Releases
+
+Create a release manually:
+
+<Steps>
+  <Step title="Click Create Release">
+    From the Releases page, click **+ Create Release**
+  </Step>
+  
+  <Step title="Select Repository">
+    Choose the source repository
+  </Step>
+  
+  <Step title="Enter Version">
+    Specify the version number (follows semver)
+  </Step>
+  
+  <Step title="Select Artifacts">
+    Choose which artifacts to include
+  </Step>
+  
+  <Step title="Add Release Notes">
+    Write or generate release notes
+  </Step>
+  
+  <Step title="Publish">
+    Click **Publish Release** to make it available
+  </Step>
+</Steps>
+
+---
+
+## Release Notes
+
+### Auto-Generated Notes
+
+Fly can automatically generate release notes:
+
+<Steps>
+  <Step title="Click Generate">
+    In the release editor, click **Generate Release Notes**
+  </Step>
+  
+  <Step title="Review">
+    Fly analyzes commits and generates:
+    - Summary of changes
+    - List of features
+    - Bug fixes
+    - Breaking changes
+    - Contributors
+  </Step>
+  
+  <Step title="Edit">
+    Modify the generated notes as needed
+  </Step>
+</Steps>
+
+### Manual Notes
+
+Write release notes using Markdown:
+
+```markdown
+## What's New
+
+### Features
+- OAuth2 authentication support (#142)
+- New user dashboard (#135)
+
+### Bug Fixes
+- Fixed login redirect issue (#145)
+- Resolved memory leak in API (#143)
+
+### Breaking Changes
+- Removed deprecated `auth.v1` endpoints
+- Changed configuration file format
+
+### Migration Guide
+See [Migration Guide](./docs/migration.md) for upgrade instructions.
+```
+
+---
+
+## Comparing Releases
+
+Compare two releases to see what changed:
+
+<Steps>
+  <Step title="Select First Release">
+    Click on the first release to compare
+  </Step>
+  
+  <Step title="Click Compare">
+    Click **Compare** and select the second release
+  </Step>
+  
+  <Step title="View Diff">
+    See:
+    - Commits between releases
+    - Changed files
+    - Added/removed artifacts
+    - Dependency changes
+  </Step>
+</Steps>
+
+### Comparison View
+
+```
+Comparing v2.0.0 → v2.1.0
+
+📊 Summary
+- 15 commits
+- 4 contributors
+- 23 files changed
+
+📦 Artifacts
++ @myteam/new-feature@1.0.0 (new)
+~ @myteam/utils@2.0.0 → 2.1.0 (updated)
+- @myteam/deprecated@1.0.0 (removed)
+
+👥 Contributors
+- developer@example.com (10 commits)
+- other@example.com (5 commits)
+```
+
+---
+
+## Release Lifecycle
+
+### Statuses
+
+| Status | Description |
+|--------|-------------|
+| **Draft** | Work in progress, not published |
+| **Published** | Available for deployment |
+| **Deployed** | Currently running in environment |
+| **Superseded** | Replaced by newer version |
+| **Deprecated** | Marked for removal |
+
+### Deprecating Releases
+
+Mark a release as deprecated:
+
+<Steps>
+  <Step title="Open Release">
+    Navigate to the release to deprecate
+  </Step>
+  
+  <Step title="Click Deprecate">
+    Click **Actions** → **Deprecate**
+  </Step>
+  
+  <Step title="Add Reason">
+    Specify why this release is deprecated and suggest alternatives
+  </Step>
+</Steps>
+
+---
+
+## Release Notifications
+
+Configure notifications for releases:
+
+### Notification Triggers
+
+- New release published
+- Release deployed to environment
+- Release deprecated
+- Security vulnerability in release
+
+### Notification Channels
+
+- **Email** - Direct email notifications
+- **Slack** - Team channel integration
+- **Webhooks** - Custom integrations
+
+---
+
+## Release Analytics
+
+View analytics for releases:
+
+### Metrics
+
+- **Deployment frequency**: How often releases go to production
+- **Lead time**: Time from commit to production
+- **Rollback rate**: Percentage of releases rolled back
+- **Mean time to recovery**: Time to fix issues
+
+### Charts
+
+- Releases over time
+- Deployment duration trends
+- Rollback statistics
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Missing Artifacts" icon="box-open">
+    **Symptoms:** Release shows fewer artifacts than expected
+    
+    **Possible causes:**
+    - Build failed for some packages
+    - Artifacts published to different repository
+    - Version mismatch
+    
+    **Solutions:**
+    1. Check workflow logs for build failures
+    2. Verify artifact versions match release version
+    3. Manually add missing artifacts
+  </Accordion>
+  
+  <Accordion title="Auto-Generation Failed" icon="wand-magic-sparkles">
+    **Symptoms:** Release notes generation returns empty or error
+    
+    **Possible causes:**
+    - No commits between releases
+    - Git repository disconnected
+    - API rate limiting
+    
+    **Solutions:**
+    1. Verify commits exist between versions
+    2. Check Git connection status
+    3. Try again after a few minutes
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Workflows" icon="gears" href="/fly-web/workflows">
+    Monitor CI/CD workflows
+  </Card>
+  <Card title="Runtime Deployment" icon="rocket" href="/developer-workflow/runtime-deployment">
+    Deploy releases
+  </Card>
+</CardGroup>
+

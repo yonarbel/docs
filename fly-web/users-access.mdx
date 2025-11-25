@@ -1,0 +1,383 @@
+---
+title: "Users & Access"
+sidebarTitle: "Users & Access"
+description: "Manage team members, roles, permissions, and access tokens"
+icon: "user-shield"
+---
+
+## Overview
+
+The Users & Access section allows you to manage your team, control permissions, and generate access tokens for CI/CD and automation.
+
+---
+
+## Team Management
+
+### Viewing Team Members
+
+Navigate to **Settings** → **Team** to see all team members:
+
+| Column | Description |
+|--------|-------------|
+| **User** | Name and email |
+| **Role** | Admin, Developer, Viewer |
+| **Status** | Active, Pending, Suspended |
+| **Joined** | Date they joined |
+| **Last Active** | Last login time |
+
+### Inviting Members
+
+<Steps>
+  <Step title="Click Invite">
+    Click **+ Invite Member**
+  </Step>
+  
+  <Step title="Enter Email">
+    Enter the new member's email address
+  </Step>
+  
+  <Step title="Select Role">
+    Choose their role:
+    - **Admin** - Full access
+    - **Developer** - Read/write to artifacts
+    - **Viewer** - Read-only access
+  </Step>
+  
+  <Step title="Send Invitation">
+    Click **Send Invite**
+  </Step>
+</Steps>
+
+### Managing Members
+
+| Action | Description |
+|--------|-------------|
+| **Change Role** | Modify member's permissions |
+| **Suspend** | Temporarily disable access |
+| **Remove** | Remove from team |
+| **Resend Invite** | Resend pending invitation |
+
+---
+
+## Roles & Permissions
+
+### Built-in Roles
+
+<AccordionGroup>
+  <Accordion title="Admin" icon="crown" defaultOpen>
+    **Full access to all features**
+    
+    | Permission | Access |
+    |------------|--------|
+    | Team management | ✅ Full |
+    | Repository settings | ✅ Full |
+    | Artifacts | ✅ Read/Write/Delete |
+    | Access tokens | ✅ Full |
+    | Billing | ✅ Full |
+    | Integrations | ✅ Full |
+  </Accordion>
+  
+  <Accordion title="Developer" icon="code">
+    **Standard development access**
+    
+    | Permission | Access |
+    |------------|--------|
+    | Team management | ❌ None |
+    | Repository settings | 📖 Read |
+    | Artifacts | ✅ Read/Write |
+    | Access tokens | ✅ Own tokens |
+    | Billing | ❌ None |
+    | Integrations | 📖 Read |
+  </Accordion>
+  
+  <Accordion title="Viewer" icon="eye">
+    **Read-only access**
+    
+    | Permission | Access |
+    |------------|--------|
+    | Team management | ❌ None |
+    | Repository settings | 📖 Read |
+    | Artifacts | 📖 Read only |
+    | Access tokens | ❌ None |
+    | Billing | ❌ None |
+    | Integrations | 📖 Read |
+  </Accordion>
+</AccordionGroup>
+
+### Permission Details
+
+| Permission | Description |
+|------------|-------------|
+| **publish** | Upload new artifacts |
+| **delete** | Remove artifacts |
+| **promote** | Promote between environments |
+| **admin** | Manage team and settings |
+| **deploy** | Deploy to runtime environments |
+
+---
+
+## Access Tokens
+
+### Token Types
+
+<CardGroup cols={2}>
+  <Card title="Personal Tokens" icon="user">
+    Tied to your user account. Used for local development and CLI access.
+  </Card>
+  <Card title="Service Tokens" icon="robot">
+    Team-level tokens for CI/CD and automation. Not tied to a specific user.
+  </Card>
+</CardGroup>
+
+### Creating Tokens
+
+<Tabs>
+  <Tab title="Personal Token">
+    <Steps>
+      <Step title="Go to Settings">
+        Navigate to **Settings** → **Access Tokens**
+      </Step>
+      
+      <Step title="Click Create">
+        Click **+ Create Token**
+      </Step>
+      
+      <Step title="Configure Token">
+        - **Name**: Descriptive name
+        - **Expiration**: Token lifetime
+        - **Scopes**: Permissions to grant
+      </Step>
+      
+      <Step title="Copy Token">
+        Copy and store the token securely
+        
+        <Warning>
+          The token is only shown once. Store it securely!
+        </Warning>
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Service Token">
+    <Steps>
+      <Step title="Go to Team Settings">
+        Navigate to **Settings** → **Service Tokens** (Admin only)
+      </Step>
+      
+      <Step title="Click Create">
+        Click **+ Create Service Token**
+      </Step>
+      
+      <Step title="Configure Token">
+        - **Name**: Descriptive name (e.g., "GitHub Actions")
+        - **Expiration**: Token lifetime
+        - **Scopes**: Permissions to grant
+        - **Repositories**: Limit to specific repos (optional)
+      </Step>
+      
+      <Step title="Copy Token">
+        Copy and store the token in your CI secrets
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+### Token Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `read:artifacts` | Read artifacts and metadata |
+| `write:artifacts` | Publish new artifacts |
+| `delete:artifacts` | Delete artifacts |
+| `read:releases` | View releases |
+| `write:releases` | Create/modify releases |
+| `admin` | Full administrative access |
+
+### Managing Tokens
+
+| Action | Description |
+|--------|-------------|
+| **View** | See token details (not the secret) |
+| **Rotate** | Generate new secret |
+| **Revoke** | Permanently disable token |
+| **Edit** | Modify scopes or expiration |
+
+---
+
+## Single Sign-On (SSO)
+
+### Supported Providers
+
+<CardGroup cols={3}>
+  <Card title="Google" icon="google">
+    Google Workspace SSO
+  </Card>
+  <Card title="Okta" icon="lock">
+    Okta SAML/OIDC
+  </Card>
+  <Card title="Azure AD" icon="microsoft">
+    Microsoft Azure AD
+  </Card>
+</CardGroup>
+
+### Configuring SSO
+
+<Steps>
+  <Step title="Go to SSO Settings">
+    Navigate to **Settings** → **Security** → **SSO**
+  </Step>
+  
+  <Step title="Select Provider">
+    Choose your identity provider
+  </Step>
+  
+  <Step title="Configure Connection">
+    Enter provider-specific details:
+    - **Client ID**
+    - **Client Secret**
+    - **Domain** (for some providers)
+  </Step>
+  
+  <Step title="Test Connection">
+    Verify the SSO connection works
+  </Step>
+  
+  <Step title="Enable SSO">
+    Enable SSO for your team
+  </Step>
+</Steps>
+
+### SSO Enforcement
+
+Options for SSO enforcement:
+
+| Setting | Description |
+|---------|-------------|
+| **Optional** | Users can use SSO or password |
+| **Required** | All users must use SSO |
+| **Required for non-admins** | Admins can use password |
+
+---
+
+## Two-Factor Authentication (2FA)
+
+### Enabling 2FA
+
+<Steps>
+  <Step title="Go to Security Settings">
+    Navigate to your profile → **Security**
+  </Step>
+  
+  <Step title="Enable 2FA">
+    Click **Enable Two-Factor Authentication**
+  </Step>
+  
+  <Step title="Scan QR Code">
+    Scan the QR code with your authenticator app
+  </Step>
+  
+  <Step title="Enter Code">
+    Enter the verification code to confirm
+  </Step>
+  
+  <Step title="Save Recovery Codes">
+    Store recovery codes securely
+  </Step>
+</Steps>
+
+### 2FA Enforcement
+
+Admins can require 2FA for all team members:
+
+1. Go to **Settings** → **Security**
+2. Enable **Require 2FA**
+3. Set grace period for existing users
+
+---
+
+## Audit Logs
+
+View security and access audit logs:
+
+### Log Events
+
+| Event | Description |
+|-------|-------------|
+| `user.login` | User logged in |
+| `user.logout` | User logged out |
+| `token.create` | Token created |
+| `token.revoke` | Token revoked |
+| `member.invite` | Team member invited |
+| `member.remove` | Team member removed |
+| `artifact.publish` | Artifact published |
+| `artifact.delete` | Artifact deleted |
+
+### Filtering Logs
+
+Filter audit logs by:
+
+- **User**: Specific user actions
+- **Action**: Type of action
+- **Date Range**: Time period
+- **Resource**: Specific artifact or repo
+
+### Exporting Logs
+
+Export audit logs for compliance:
+
+```bash
+# Via API
+fly audit export --from 2024-01-01 --to 2024-01-31 --format csv
+```
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Invitation Not Received" icon="envelope">
+    **Solutions:**
+    1. Check spam folder
+    2. Verify email address is correct
+    3. Resend invitation
+    4. Check email domain isn't blocked
+  </Accordion>
+  
+  <Accordion title="Token Not Working" icon="key">
+    **Possible causes:**
+    - Token expired
+    - Token revoked
+    - Insufficient scopes
+    
+    **Solutions:**
+    1. Check token expiration
+    2. Verify token hasn't been revoked
+    3. Create new token with correct scopes
+  </Accordion>
+  
+  <Accordion title="SSO Login Failed" icon="lock">
+    **Possible causes:**
+    - SSO misconfigured
+    - User not in allowed domain
+    - Provider issues
+    
+    **Solutions:**
+    1. Verify SSO configuration
+    2. Check allowed domains
+    3. Test with admin account
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Fly Chat" icon="message-bot" href="/fly-web/fly-chat">
+    Use AI assistant
+  </Card>
+  <Card title="Getting Started" icon="play" href="/getting-started/overview">
+    Team setup guide
+  </Card>
+</CardGroup>
+

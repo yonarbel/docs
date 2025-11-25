@@ -1,0 +1,263 @@
+---
+title: "CLI Reference"
+sidebarTitle: "CLI Reference"
+description: "Complete reference for all Fly CLI commands"
+icon: "terminal"
+---
+
+## Installation
+
+<Tabs>
+  <Tab title="macOS">
+    ```bash
+    brew install jfrog/tap/fly
+    ```
+  </Tab>
+  <Tab title="Windows">
+    ```powershell
+    winget install JFrog.Fly
+    ```
+  </Tab>
+  <Tab title="Linux">
+    ```bash
+    curl -fsSL https://fly.jfrog.io/install.sh | bash
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Command Overview
+
+| Command | Description |
+|---------|-------------|
+| `fly auth` | Authentication management |
+| `fly config` | Configuration management |
+| `fly publish` | Publish artifacts |
+| `fly search` | Search artifacts |
+| `fly versions` | List artifact versions |
+| `fly info` | Get artifact info |
+| `fly deploy` | Deploy to Kubernetes |
+| `fly docker` | Docker operations |
+| `fly helm` | Helm operations |
+| `fly cache` | Cache management |
+| `fly sync` | Sync with registry |
+
+---
+
+## fly auth
+
+### fly auth login
+
+```bash
+fly auth login [--method browser|token|sso]
+```
+
+### fly auth logout
+
+```bash
+fly auth logout
+```
+
+### fly auth status
+
+```bash
+fly auth status
+```
+
+### fly auth token
+
+```bash
+fly auth token create --name "Token Name" --expiry 90d
+fly auth token list
+fly auth token revoke <token-id>
+```
+
+---
+
+## fly config
+
+### fly config show
+
+```bash
+fly config show [--format json|yaml]
+```
+
+### fly config get/set
+
+```bash
+fly config get <key>
+fly config set <key> <value>
+```
+
+### fly config auto
+
+```bash
+fly config auto [--dry-run] [--force]
+```
+
+### Package manager configuration
+
+```bash
+fly config npm
+fly config pip
+fly config maven
+fly config gradle
+fly config docker
+fly config go
+fly config nuget
+```
+
+---
+
+## fly publish
+
+```bash
+fly publish [path] [options]
+
+Options:
+  --tag <tag>          Add tag (e.g., beta)
+  --version <version>  Specify version
+  --git-tag            Create Git tag
+  --dry-run            Preview without publishing
+  --release-notes      Add release notes
+```
+
+---
+
+## fly search
+
+```bash
+fly search <query> [options]
+
+Options:
+  --type <type>        Filter by type (npm, docker, etc.)
+  --since <duration>   Filter by time (e.g., "7 days")
+  --author <email>     Filter by author
+  --format <format>    Output format (table, json, yaml)
+```
+
+---
+
+## fly versions
+
+```bash
+fly versions <package> [options]
+
+Options:
+  --all                Show all versions
+  --format <format>    Output format
+```
+
+---
+
+## fly info
+
+```bash
+fly info <package>[@version] [options]
+
+Options:
+  --format <format>    Output format
+```
+
+---
+
+## fly deploy
+
+```bash
+fly deploy <image>:<tag> [options]
+
+Options:
+  --namespace <ns>     Kubernetes namespace
+  --strategy <type>    Deployment strategy (rolling, canary, blue-green)
+  --query <search>     Deploy by semantic search
+```
+
+---
+
+## fly docker
+
+```bash
+fly docker login
+fly docker build -t <image>:<tag> .
+fly docker push <image>:<tag>
+fly docker pull <image>:<tag>
+fly docker images
+fly docker rmi <image>:<tag>
+```
+
+---
+
+## fly helm
+
+```bash
+fly helm repo add
+fly helm push <chart.tgz>
+fly helm search <query>
+fly helm install <release> <chart> [--version <ver>]
+```
+
+---
+
+## fly cache
+
+```bash
+fly cache status
+fly cache clear [--type <type>]
+fly cache preload
+fly cache limit <size>
+```
+
+---
+
+## fly sync
+
+```bash
+fly sync [--full] [--verbose]
+fly sync status
+```
+
+---
+
+## fly k8s
+
+```bash
+fly k8s create-secret --namespace <ns>
+```
+
+---
+
+## fly rollback
+
+```bash
+fly rollback <deployment> --namespace <ns> [--to <version>]
+```
+
+---
+
+## Global Options
+
+| Option | Description |
+|--------|-------------|
+| `--help, -h` | Show help |
+| `--version, -v` | Show version |
+| `--verbose` | Verbose output |
+| `--quiet, -q` | Suppress output |
+| `--format` | Output format |
+| `--config` | Config file path |
+| `--no-color` | Disable colors |
+
+---
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success |
+| 1 | General error |
+| 2 | Invalid arguments |
+| 3 | Authentication error |
+| 4 | Network error |
+| 5 | Not found |
+| 6 | Permission denied |
+

@@ -1,0 +1,322 @@
+---
+title: "Local Artifact Management"
+sidebarTitle: "Local Management"
+description: "Manage artifacts on your local development machine with the Fly Desktop App"
+icon: "laptop"
+---
+
+## Overview
+
+The Fly Desktop App provides powerful tools for managing artifacts on your local machine, making development faster and more efficient.
+
+---
+
+## Package Manager Integration
+
+### Automatic Configuration
+
+When you run `fly config auto`, Fly detects and configures your installed package managers:
+
+```bash
+$ fly config auto
+
+Detecting package managers...
+✓ npm detected (v20.10.0)
+✓ pip detected (v23.3.1)
+✓ Maven detected (v3.9.5)
+✓ Docker detected (v24.0.7)
+
+Configuring registries...
+✓ npm configured → https://acme.jfrog.io/artifactory/api/npm/npm/
+✓ pip configured → https://acme.jfrog.io/artifactory/api/pypi/pypi/simple
+✓ Maven configured → settings.xml updated
+✓ Docker configured → docker login successful
+
+All package managers configured!
+```
+
+### Manual Configuration
+
+Configure specific package managers:
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    fly config npm
+    ```
+    
+    Or manually edit `~/.npmrc`:
+    ```ini
+    registry=https://your-team.jfrog.io/artifactory/api/npm/npm/
+    //your-team.jfrog.io/artifactory/api/npm/npm/:_authToken=${FLY_NPM_TOKEN}
+    always-auth=true
+    ```
+  </Tab>
+  
+  <Tab title="pip">
+    ```bash
+    fly config pip
+    ```
+    
+    Or manually edit `~/.pip/pip.conf`:
+    ```ini
+    [global]
+    index-url = https://${FLY_USER}:${FLY_TOKEN}@your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+    trusted-host = your-team.jfrog.io
+    ```
+  </Tab>
+  
+  <Tab title="Docker">
+    ```bash
+    fly config docker
+    ```
+    
+    This runs:
+    ```bash
+    docker login your-team.jfrog.io
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Working with Artifacts
+
+### Searching Artifacts
+
+Find artifacts in your registry:
+
+```bash
+# Search by name
+fly search "authentication"
+
+# Search by package type
+fly search --type npm "utils"
+
+# Search with filters
+fly search --type docker --since "7 days ago" "api"
+```
+
+### Listing Versions
+
+View available versions of a package:
+
+```bash
+fly versions @myteam/utils
+
+# Output:
+# @myteam/utils
+# ├── 2.1.0 (latest) - published 2 hours ago
+# ├── 2.0.1 - published 3 days ago
+# ├── 2.0.0 - published 1 week ago
+# └── 1.9.0 - published 2 weeks ago
+```
+
+### Viewing Artifact Details
+
+Get detailed information about an artifact:
+
+```bash
+fly info @myteam/utils@2.1.0
+
+# Output:
+# Package: @myteam/utils@2.1.0
+# Published: 2024-01-15T10:30:00Z
+# Author: developer@example.com
+# Git Commit: abc123def
+# Git Branch: main
+# Size: 145.2 KB
+# Downloads: 1,234
+```
+
+---
+
+## Publishing Artifacts
+
+### Quick Publish
+
+Publish the current project:
+
+```bash
+fly publish
+```
+
+This automatically:
+1. Detects the package type
+2. Validates the version
+3. Links to the current Git commit
+4. Uploads to your Fly Registry
+
+### Publish with Options
+
+```bash
+# Publish with a specific tag
+fly publish --tag beta
+
+# Publish and create a Git tag
+fly publish --git-tag
+
+# Dry run (show what would be published)
+fly publish --dry-run
+
+# Publish with custom version
+fly publish --version 2.0.0-rc.1
+```
+
+### Pre-publish Hooks
+
+Create a `.fly/hooks/pre-publish` script:
+
+```bash
+#!/bin/bash
+# Run tests before publishing
+npm test
+
+# Run linting
+npm run lint
+
+# Build the project
+npm run build
+```
+
+---
+
+## Caching & Performance
+
+### Local Cache
+
+Fly maintains a local cache to speed up package resolution:
+
+```bash
+# View cache status
+fly cache status
+
+# Clear cache
+fly cache clear
+
+# Preload common packages
+fly cache preload
+```
+
+### Proxy Configuration
+
+If you're behind a corporate proxy:
+
+```bash
+fly config proxy --http http://proxy.company.com:8080
+fly config proxy --https https://proxy.company.com:8080
+```
+
+---
+
+## Environment Management
+
+### Multiple Registries
+
+Configure different registries for different environments:
+
+```bash
+# Set up production registry
+fly env add prod --url https://prod.jfrog.io
+
+# Set up staging registry
+fly env add staging --url https://staging.jfrog.io
+
+# Switch environments
+fly env use staging
+```
+
+### Project-Level Configuration
+
+Create a `.fly/config.yaml` in your project root:
+
+```yaml
+version: 1
+
+registry:
+  url: https://myteam.jfrog.io
+
+publishing:
+  auto_version: true
+  include_git_info: true
+  
+hooks:
+  pre_publish:
+    - npm test
+    - npm run build
+  post_publish:
+    - echo "Published successfully!"
+
+ignore:
+  - "*.test.js"
+  - "docs/**"
+  - ".env*"
+```
+
+---
+
+## Offline Mode
+
+Work without network access:
+
+```bash
+# Enable offline mode (uses local cache only)
+fly offline enable
+
+# Check offline status
+fly offline status
+
+# Disable offline mode
+fly offline disable
+```
+
+<Warning>
+  Offline mode only works with packages that are already cached locally.
+</Warning>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Package Not Found" icon="box-open">
+    **Error:** `Package @myteam/utils not found`
+    
+    **Solutions:**
+    1. Verify the package exists: `fly search utils`
+    2. Check your registry configuration: `fly config show`
+    3. Ensure you're authenticated: `fly auth status`
+  </Accordion>
+  
+  <Accordion title="Authentication Failed" icon="lock">
+    **Error:** `401 Unauthorized`
+    
+    **Solutions:**
+    1. Re-authenticate: `fly auth login`
+    2. Check token expiration: `fly auth status`
+    3. Verify registry URL is correct
+  </Accordion>
+  
+  <Accordion title="Publish Failed" icon="upload">
+    **Error:** `Failed to publish package`
+    
+    **Solutions:**
+    1. Check version doesn't already exist
+    2. Verify you have publish permissions
+    3. Run with verbose output: `fly publish --verbose`
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Automated Workflows" icon="gears" href="/developer-workflow/automated-workflows">
+    Set up CI/CD pipelines
+  </Card>
+  <Card title="Package Managers" icon="box" href="/package-managers/overview">
+    Detailed configuration guides
+  </Card>
+</CardGroup>
+

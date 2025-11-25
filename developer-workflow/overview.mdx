@@ -1,0 +1,212 @@
+---
+title: "Developer Workflow"
+sidebarTitle: "Overview"
+description: "Learn how to integrate JFrog Fly into your daily development workflow"
+icon: "code"
+---
+
+## Development with Fly
+
+JFrog Fly is designed to fit seamlessly into your existing development workflow, enhancing rather than replacing your current processes.
+
+<Frame>
+  <img src="/images/workflow-diagram.png" alt="Developer Workflow Diagram" className="rounded-lg" />
+</Frame>
+
+---
+
+## The Fly Development Lifecycle
+
+<Steps>
+  <Step title="Develop" icon="code">
+    Write code using packages from your Fly Registry. The Desktop App ensures your local package managers are configured correctly.
+  </Step>
+  
+  <Step title="Build & Test" icon="flask-vial">
+    Build your project locally or in CI. Fly caches dependencies for faster builds.
+  </Step>
+  
+  <Step title="Publish" icon="upload">
+    Publish artifacts to your Fly Registry with automatic versioning and Git traceability.
+  </Step>
+  
+  <Step title="Deploy" icon="rocket">
+    Deploy to staging or production with semantic version selection and rollback capabilities.
+  </Step>
+  
+  <Step title="Monitor" icon="chart-line">
+    Track releases, monitor artifact usage, and get insights through Fly Web.
+  </Step>
+</Steps>
+
+---
+
+## Workflow Components
+
+<CardGroup cols={3}>
+  <Card title="Local Management" icon="laptop" href="/developer-workflow/local-artifact-management">
+    Manage artifacts on your development machine
+  </Card>
+  <Card title="Automated Workflows" icon="gears" href="/developer-workflow/automated-workflows">
+    CI/CD integration and automation
+  </Card>
+  <Card title="Runtime Deployment" icon="server" href="/developer-workflow/runtime-deployment">
+    Deploy to Kubernetes and cloud environments
+  </Card>
+</CardGroup>
+
+---
+
+## Common Workflows
+
+### Consuming Packages
+
+Pull packages from your Fly Registry:
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    # Packages are automatically resolved from Fly Registry
+    npm install @myteam/shared-utils
+    ```
+  </Tab>
+  
+  <Tab title="pip">
+    ```bash
+    # Install from Fly Registry
+    pip install my-internal-package
+    ```
+  </Tab>
+  
+  <Tab title="Maven">
+    ```xml
+    <dependency>
+      <groupId>com.myteam</groupId>
+      <artifactId>shared-utils</artifactId>
+      <version>1.2.0</version>
+    </dependency>
+    ```
+  </Tab>
+  
+  <Tab title="Docker">
+    ```bash
+    docker pull myteam.jfrog.io/docker/my-app:latest
+    ```
+  </Tab>
+</Tabs>
+
+### Publishing Packages
+
+Publish new versions to your Fly Registry:
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    # Publish with Fly CLI
+    fly publish
+    
+    # Or use npm directly
+    npm publish
+    ```
+  </Tab>
+  
+  <Tab title="pip">
+    ```bash
+    # Publish with Fly CLI
+    fly publish
+    
+    # Or use twine
+    twine upload dist/*
+    ```
+  </Tab>
+  
+  <Tab title="Docker">
+    ```bash
+    # Tag and push
+    docker tag my-app:latest myteam.jfrog.io/docker/my-app:1.0.0
+    docker push myteam.jfrog.io/docker/my-app:1.0.0
+    
+    # Or use Fly CLI
+    fly docker push my-app:1.0.0
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Agentic Development
+
+With the Fly Desktop App integrated into your IDE, you can use natural language commands:
+
+<AccordionGroup>
+  <Accordion title="Search Artifacts" icon="magnifying-glass" defaultOpen>
+    ```
+    "Find all versions of the auth service from last week"
+    "Search for packages that handle user authentication"
+    "What version is deployed in production?"
+    ```
+  </Accordion>
+  
+  <Accordion title="Manage Releases" icon="tag">
+    ```
+    "Create a release for version 2.0.0"
+    "What changed since the last release?"
+    "Generate release notes for this version"
+    ```
+  </Accordion>
+  
+  <Accordion title="Configure Pipelines" icon="gears">
+    ```
+    "Set up my GitHub Actions to publish to Fly"
+    "Configure Docker builds for this project"
+    "Add Fly to my CI pipeline"
+    ```
+  </Accordion>
+  
+  <Accordion title="Deploy" icon="rocket">
+    ```
+    "Deploy version 1.5.0 to staging"
+    "Roll back to the previous version"
+    "What's the deployment status?"
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Semantic Versioning" icon="code-branch">
+    Use semantic versioning (semver) for all packages. Fly automatically tracks and validates versions.
+  </Card>
+  
+  <Card title="Git Tagging" icon="tag">
+    Tag releases in Git. Fly links artifacts to tags for complete traceability.
+  </Card>
+  
+  <Card title="Environment Separation" icon="layer-group">
+    Use separate environments (dev, staging, prod) with appropriate access controls.
+  </Card>
+  
+  <Card title="Automated Publishing" icon="robot">
+    Set up CI/CD to publish on merge to main or on tag creation.
+  </Card>
+</CardGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Local Management" icon="laptop" href="/developer-workflow/local-artifact-management">
+    Manage local artifacts
+  </Card>
+  <Card title="Automated Workflows" icon="gears" href="/developer-workflow/automated-workflows">
+    Set up CI/CD
+  </Card>
+  <Card title="Runtime Deployment" icon="server" href="/developer-workflow/runtime-deployment">
+    Deploy applications
+  </Card>
+</CardGroup>
+

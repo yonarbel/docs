@@ -1,0 +1,453 @@
+---
+title: "Troubleshooting"
+sidebarTitle: "Troubleshooting"
+description: "Common issues and solutions when using JFrog Fly"
+icon: "wrench"
+---
+
+## Quick Diagnostics
+
+Run the diagnostic tool to identify common issues:
+
+```bash
+fly doctor
+```
+
+This checks:
+- Network connectivity
+- Authentication status
+- Package manager configuration
+- Registry accessibility
+
+---
+
+## Authentication Issues
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized" icon="lock" defaultOpen>
+    **Symptoms:**
+    - `401 Unauthorized` error
+    - `authentication required`
+    - Login prompts in CI/CD
+    
+    **Solutions:**
+    
+    <Steps>
+      <Step title="Check authentication status">
+        ```bash
+        fly auth status
+        ```
+        If not authenticated, run `fly auth login`
+      </Step>
+      
+      <Step title="Verify token hasn't expired">
+        Check token expiration in Fly Web under **Settings** → **Access Tokens**
+      </Step>
+      
+      <Step title="Reconfigure package managers">
+        ```bash
+        fly config auto
+        ```
+      </Step>
+      
+      <Step title="For CI/CD, verify secrets">
+        Ensure `FLY_TOKEN` or `FLY_NPM_TOKEN` is correctly set
+      </Step>
+    </Steps>
+  </Accordion>
+  
+  <Accordion title="OIDC Authentication Failed" icon="key">
+    **Symptoms:**
+    - `Failed to get OIDC token`
+    - `invalid_client` error
+    - CI/CD workflow can't authenticate
+    
+    **Solutions:**
+    
+    1. Ensure `id-token: write` permission is set:
+       ```yaml
+       permissions:
+         contents: read
+         id-token: write
+       ```
+    
+    2. Check trust policy in Fly Web matches your workflow
+    3. Verify repository is connected in Fly
+    4. Ensure workflow is running from the correct branch
+  </Accordion>
+  
+  <Accordion title="Token Doesn't Work" icon="ban">
+    **Symptoms:**
+    - Token created but doesn't authenticate
+    - Works in one place but not another
+    
+    **Solutions:**
+    
+    1. Verify token scopes include required permissions
+    2. Check token hasn't been revoked
+    3. Ensure you're using the correct token format
+    4. For npm, verify `_authToken` is set correctly:
+       ```bash
+       npm config get //your-team.jfrog.io/artifactory/api/npm/npm/:_authToken
+       ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Network Issues
+
+<AccordionGroup>
+  <Accordion title="Connection Timeout" icon="clock">
+    **Symptoms:**
+    - `Connection timed out`
+    - `ETIMEDOUT` errors
+    - Operations hang indefinitely
+    
+    **Solutions:**
+    
+    1. Check network connectivity:
+       ```bash
+       curl -I https://your-team.jfrog.io/artifactory/api/system/ping
+       ```
+    
+    2. Verify firewall isn't blocking:
+       - Port 443 (HTTPS)
+       - Your Fly registry domain
+    
+    3. Check proxy settings if behind corporate proxy:
+       ```bash
+       fly config proxy --http http://proxy:8080
+       fly config proxy --https https://proxy:8080
+       ```
+    
+    4. Increase timeout:
+       ```bash
+       fly config set network.timeout 120
+       ```
+  </Accordion>
+  
+  <Accordion title="SSL/TLS Certificate Errors" icon="shield-xmark">
+    **Symptoms:**
+    - `UNABLE_TO_VERIFY_LEAF_SIGNATURE`
+    - `SSL certificate problem`
+    - `self signed certificate in certificate chain`
+    
+    **Solutions:**
+    
+    1. **Update CA certificates**:
+       ```bash
+       # macOS
+       brew install ca-certificates
+       
+       # Ubuntu/Debian
+       sudo apt update && sudo apt install ca-certificates
+       ```
+    
+    2. **Check corporate proxy** isn't doing SSL inspection
+    
+    3. **For npm** (temporary workaround):
+       ```bash
+       npm config set strict-ssl false  # Not recommended for production
+       ```
+    
+    4. **For pip**, add trusted host:
+       ```ini
+       [global]
+       trusted-host = your-team.jfrog.io
+       ```
+  </Accordion>
+  
+  <Accordion title="Proxy Issues" icon="globe">
+    **Symptoms:**
+    - Works locally but not in corporate network
+    - `ECONNREFUSED` or proxy errors
+    
+    **Solutions:**
+    
+    1. Configure proxy in Fly:
+       ```bash
+       fly config proxy --http http://proxy.company.com:8080
+       fly config proxy --https https://proxy.company.com:8080
+       fly config proxy --no-proxy "localhost,127.0.0.1,*.internal.company.com"
+       ```
+    
+    2. Set environment variables:
+       ```bash
+       export HTTP_PROXY=http://proxy:8080
+       export HTTPS_PROXY=https://proxy:8080
+       export NO_PROXY=localhost,127.0.0.1
+       ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Package Manager Issues
+
+<AccordionGroup>
+  <Accordion title="npm: Package Not Found" icon="npm">
+    **Symptoms:**
+    - `404 Not Found`
+    - `No matching version found`
+    
+    **Solutions:**
+    
+    1. Verify package exists:
+       ```bash
+       fly search @myteam/package
+       ```
+    
+    2. Check registry URL:
+       ```bash
+       npm config get registry
+       ```
+    
+    3. For scoped packages, verify scope configuration:
+       ```bash
+       npm config get @myteam:registry
+       ```
+    
+    4. Clear npm cache:
+       ```bash
+       npm cache clean --force
+       ```
+  </Accordion>
+  
+  <Accordion title="pip: Package Not Found" icon="python">
+    **Symptoms:**
+    - `No matching distribution found`
+    - `Could not find a version`
+    
+    **Solutions:**
+    
+    1. Check index URL:
+       ```bash
+       pip config get global.index-url
+       ```
+    
+    2. Add extra index for public packages:
+       ```ini
+       [global]
+       index-url = https://your-team.jfrog.io/artifactory/api/pypi/pypi/simple
+       extra-index-url = https://pypi.org/simple/
+       ```
+    
+    3. Verify package name and version exist in Fly
+  </Accordion>
+  
+  <Accordion title="Docker: Pull Failed" icon="docker">
+    **Symptoms:**
+    - `ImagePullBackOff`
+    - `unauthorized: authentication required`
+    - `manifest unknown`
+    
+    **Solutions:**
+    
+    1. Re-login to registry:
+       ```bash
+       fly config docker
+       # or
+       docker login your-team.jfrog.io
+       ```
+    
+    2. Verify image exists:
+       ```bash
+       fly search --type docker my-app
+       ```
+    
+    3. Check image name format:
+       ```bash
+       docker pull your-team.jfrog.io/docker/my-app:tag
+       ```
+    
+    4. For Kubernetes, verify image pull secret:
+       ```bash
+       kubectl get secret fly-registry-secret -o yaml
+       ```
+  </Accordion>
+  
+  <Accordion title="Maven: Dependency Resolution Failed" icon="java">
+    **Symptoms:**
+    - `Could not resolve dependencies`
+    - `Failed to collect dependencies`
+    
+    **Solutions:**
+    
+    1. Verify settings.xml configuration
+    2. Check server ID matches pom.xml repository ID
+    3. Run with debug:
+       ```bash
+       mvn dependency:resolve -X
+       ```
+    4. Clear local repository:
+       ```bash
+       mvn dependency:purge-local-repository
+       ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Publishing Issues
+
+<AccordionGroup>
+  <Accordion title="Version Already Exists" icon="copy">
+    **Symptoms:**
+    - `409 Conflict`
+    - `File already exists`
+    - `Version x.y.z already exists`
+    
+    **Solutions:**
+    
+    1. **Bump version number** in your package config
+    
+    2. **For development**, use unique suffix:
+       ```bash
+       npm version prerelease --preid=dev
+       # Creates 1.0.0-dev.0
+       ```
+    
+    3. **Delete existing version** (if policy allows):
+       ```bash
+       fly unpublish @myteam/package@1.0.0 --force
+       ```
+  </Accordion>
+  
+  <Accordion title="Permission Denied" icon="ban">
+    **Symptoms:**
+    - `403 Forbidden`
+    - `Permission denied`
+    - `Access denied`
+    
+    **Solutions:**
+    
+    1. Verify you have publish permissions:
+       - Check your role in Fly Web
+       - Contact team admin
+    
+    2. Check repository allows publishing
+    
+    3. Verify token has correct scopes:
+       ```bash
+       fly auth token list
+       ```
+  </Accordion>
+  
+  <Accordion title="Invalid Package" icon="file-xmark">
+    **Symptoms:**
+    - `Invalid package`
+    - `Validation failed`
+    - `Missing required fields`
+    
+    **Solutions:**
+    
+    1. **npm**: Run `npm pack` and inspect the tarball
+    2. **Python**: Run `twine check dist/*`
+    3. **Docker**: Verify image was built successfully
+    4. Check package.json/pyproject.toml has all required fields
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Desktop App Issues
+
+<AccordionGroup>
+  <Accordion title="App Won't Start" icon="xmark">
+    **Solutions:**
+    
+    1. Check system requirements
+    
+    2. View logs:
+       ```bash
+       cat ~/.fly/logs/fly.log
+       ```
+    
+    3. Reset application:
+       ```bash
+       fly reset
+       ```
+    
+    4. Reinstall:
+       ```bash
+       brew reinstall jfrog-fly  # macOS
+       ```
+  </Accordion>
+  
+  <Accordion title="Sync Not Working" icon="rotate">
+    **Symptoms:**
+    - Package managers not updated
+    - Changes not reflected
+    
+    **Solutions:**
+    
+    1. Force sync:
+       ```bash
+       fly sync --full
+       ```
+    
+    2. Check sync status:
+       ```bash
+       fly sync status
+       ```
+    
+    3. Restart the app
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## CI/CD Issues
+
+<AccordionGroup>
+  <Accordion title="Workflow Not Triggering" icon="play">
+    **Solutions:**
+    
+    1. Check webhook configuration in Git provider
+    2. Verify repository is connected in Fly
+    3. Check workflow file syntax
+    4. View webhook delivery logs in GitHub/GitLab
+  </Accordion>
+  
+  <Accordion title="Build Fails with Auth Error" icon="lock">
+    **Solutions:**
+    
+    1. Verify secrets are set correctly:
+       - `FLY_URL`
+       - `FLY_TOKEN` or use OIDC
+    
+    2. Check secret names match workflow references
+    
+    3. For OIDC, verify trust policy allows the workflow
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Getting Help
+
+If you're still experiencing issues:
+
+<CardGroup cols={2}>
+  <Card title="Run Diagnostics" icon="stethoscope">
+    ```bash
+    fly doctor --verbose
+    ```
+  </Card>
+  
+  <Card title="Export Logs" icon="file-export">
+    ```bash
+    fly logs --export > fly-debug.log
+    ```
+  </Card>
+  
+  <Card title="Contact Support" icon="envelope" href="mailto:fly-support@jfrog.com">
+    Email fly-support@jfrog.com with your logs
+  </Card>
+  
+  <Card title="FAQ" icon="circle-question" href="/resources/faq">
+    Check frequently asked questions
+  </Card>
+</CardGroup>
+
