@@ -158,7 +158,7 @@ jobs:
       - name: Setup Fly
         uses: jfrog/fly-action@v1
         with:
-          fly-url: ${{ secrets.FLY_URL }}
+          url: ${{ secrets.FLY_URL }}
           fly-token: ${{ secrets.FLY_TOKEN }}
       
       - name: Publish Package

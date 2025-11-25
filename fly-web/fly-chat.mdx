@@ -134,7 +134,7 @@ Ask Fly Chat to generate configuration code:
           
           - uses: jfrog/fly-action@v1
             with:
-              fly-url: ${{ vars.FLY_URL }}
+              url: ${{ vars.FLY_URL }}
           
           - run: npm ci
           - run: npm test

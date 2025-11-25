@@ -188,11 +188,9 @@ jobs:
       - name: Setup JFrog Fly
         uses: jfrog/fly-action@v1
         with:
-          fly-url: ${{ vars.FLY_URL }}
+          url: ${{ vars.FLY_URL }}
       
-      - name: Login to Fly Registry
-        run: fly config docker
-      
+  
       - name: Build and Push
         run: |
           docker build -t ${{ vars.FLY_URL }}/docker/${{ github.repository }}:${{ github.ref_name }} .

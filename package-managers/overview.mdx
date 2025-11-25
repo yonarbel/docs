@@ -144,7 +144,7 @@ For CI/CD pipelines, use OIDC for tokenless authentication:
 # GitHub Actions example
 - uses: jfrog/fly-action@v1
   with:
-    fly-url: ${{ vars.FLY_URL }}
+    url: ${{ vars.FLY_URL }}
     # No token needed - uses OIDC
 ```
 

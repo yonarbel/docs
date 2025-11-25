@@ -127,7 +127,7 @@ icon: "circle-question"
     ```yaml
     - uses: jfrog/fly-action@v1
       with:
-        fly-url: ${{ vars.FLY_URL }}
+        url: ${{ vars.FLY_URL }}
     ```
     
     Fly validates the OIDC token from your CI provider and grants temporary access.
@@ -218,7 +218,7 @@ icon: "circle-question"
     ```yaml
     - uses: jfrog/fly-action@v1
       with:
-        fly-url: ${{ vars.FLY_URL }}
+        url: ${{ vars.FLY_URL }}
     
     - run: npm ci
     - run: npm publish
